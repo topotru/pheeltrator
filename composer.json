@@ -1,0 +1,16 @@
+{
+  "name": "topotru/pheeltrator",
+  "description": "pheeltrator",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "topot",
+      "email": "topotru@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "TopoTrue\\Pheeltrator\\": "src/Pheeltrator/"
+    }
+  }
+}
