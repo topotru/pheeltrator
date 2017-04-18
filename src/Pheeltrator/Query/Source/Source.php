@@ -8,16 +8,15 @@
 
 namespace TopoTrue\Pheeltrator\Query\Source;
 
-
 /**
  * Class Source
  * @package TopoTrue\Pheeltrator\Query
  */
 class Source implements SourceInterface
 {
-    
     const SELECT_ALL     = 0;
     const SELECT_COLUMNS = 1;
+    
     /**
      * @var string
      */
@@ -42,7 +41,7 @@ class Source implements SourceInterface
     public function __construct($name, $alias = null, $select = self::SELECT_COLUMNS)
     {
         $this->name   = $name;
-        $this->alias  = $alias ?? strtolower(preg_replace('/[^a-z0-9_]/i', '_', $this->name));
+        $this->alias  = ! is_null($alias) ? $alias : strtolower(preg_replace('/[^a-z0-9_]/i', '_', $this->name));
         $this->select = $select;
     }
     
@@ -53,7 +52,6 @@ class Source implements SourceInterface
     {
         return $this->select;
     }
-    
     
     /**
      * @return string

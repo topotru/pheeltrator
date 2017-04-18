@@ -14,7 +14,6 @@ namespace TopoTrue\Pheeltrator\Query\Source;
  */
 class Join
 {
-    
     const INNER = 1;
     const OUTER = 2;
     const LEFT  = 3;
@@ -39,7 +38,7 @@ class Join
      * Join constructor.
      * @param SourceInterface $source
      * @param string $condition
-     * @param string $type
+     * @param int $type
      */
     public function __construct(SourceInterface $source, $condition, $type = self::INNER)
     {

@@ -18,6 +18,7 @@ class Column extends AbstractColumn
 {
     /**
      * Column constructor.
+     * @param string $name
      */
     public function __construct($name)
     {

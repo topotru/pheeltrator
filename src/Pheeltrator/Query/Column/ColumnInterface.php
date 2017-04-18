@@ -8,8 +8,6 @@
 
 namespace TopoTrue\Pheeltrator\Query\Column;
 
-use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
-
 
 /**
  * Class ColumnInterface
