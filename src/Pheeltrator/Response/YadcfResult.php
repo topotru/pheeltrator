@@ -23,7 +23,7 @@ class YadcfResult implements ResultInterface
     protected $parser;
     
     /**
-     * @var Yadcf
+     * @var array
      */
     protected $items;
     

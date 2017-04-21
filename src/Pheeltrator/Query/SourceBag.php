@@ -46,6 +46,9 @@ class SourceBag
         $this->columns = $columns;
     }
     
+    /**
+     * @return array
+     */
     public function getSelect()
     {
         $out = $this->getSourceSelect($this->source);
@@ -58,6 +61,10 @@ class SourceBag
         
     }
     
+    /**
+     * @param SourceInterface $source
+     * @return array
+     */
     protected function getSourceSelect(SourceInterface $source)
     {
         $out = [];
@@ -68,7 +75,13 @@ class SourceBag
             foreach ($this->getColumns() as $column) {
                 //echo $column->getName()." | {$column->aliased()}";
                 if ($column->getSource() === $source) {
-                    $out[$column->getName()] = $column->aliased();
+                    $flds = [];
+                    $many = count($column->getFields()) > 1;
+                    foreach ($column->getFields() as $field) {
+                        $alias = $many ? "_{$column->getSource()->getAlias()}_{$field}" : $column->getAlias();
+                        $flds[] = "{$column->getSource()->aliased($field)} as {$alias}";
+                    }
+                    $out[$column->getName()] = implode(',', $flds);
                 }
                 //echo '<pre>', print_r($out), '</pre>';
             }

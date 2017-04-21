@@ -30,6 +30,11 @@ abstract class AbstractColumn implements ColumnInterface
     protected $field;
     
     /**
+     * @var array
+     */
+    protected $fields = [];
+    
+    /**
      * @var string
      */
     protected $type;
@@ -73,7 +78,15 @@ abstract class AbstractColumn implements ColumnInterface
      */
     public function getField()
     {
-        return $this->field;
+        return isset($this->fields[0]) ? $this->fields[0] : null;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->fields;
     }
     
     /**
@@ -97,16 +110,16 @@ abstract class AbstractColumn implements ColumnInterface
      */
     public function getAlias()
     {
-        return $this->alias;
+        return $this->alias ? $this->alias : $this->getName();
     }
     
     /**
      * @return string
      */
-    public function aliased()
+    public function aliased($with_as = false)
     {
         //return "{$this->getSource()->getAlias()}.{$this->getField()}";
-        return $this->getSource()->aliased($this->getField());
+        return $this->getSource()->aliased($this->getField()).($with_as ? " as {$column->getAlias()}" : '');
     }
     
     /**

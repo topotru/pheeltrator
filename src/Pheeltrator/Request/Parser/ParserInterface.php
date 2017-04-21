@@ -8,6 +8,8 @@
 
 namespace TopoTrue\Pheeltrator\Request\Parser;
 
+use TopoTrue\Pheeltrator\Response\ResultInterface;
+
 /**
  * Interface ParserInterface
  * @package TopoTrue\Pheeltrator\Request\Parser
@@ -75,5 +77,10 @@ interface ParserInterface
      * @return mixed
      */
     public function getData($key = null);
+    
+    /**
+     * @return ResultInterface
+     */
+    public function getResultObject(array $items);
     
 }

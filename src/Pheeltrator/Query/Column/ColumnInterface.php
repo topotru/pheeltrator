@@ -26,6 +26,11 @@ interface ColumnInterface
     public function getField();
     
     /**
+     * @return array
+     */
+    public function getFields();
+    
+    /**
      * @return string
      */
     public function getType();
@@ -43,7 +48,7 @@ interface ColumnInterface
     /**
      * @return string
      */
-    public function aliased();
+    public function aliased($with_as = false);
     
     /**
      * @return string

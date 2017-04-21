@@ -31,7 +31,17 @@ class Column extends AbstractColumn
      */
     public function setField($field)
     {
-        $this->field = $field;
+        $this->fields[] = $field;
+        return $this;
+    }
+    
+    /**
+     * @param array $fields
+     * @return Column
+     */
+    public function setFields(array $fields)
+    {
+        $this->fields = $fields;
         return $this;
     }
     

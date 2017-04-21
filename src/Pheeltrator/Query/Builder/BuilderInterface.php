@@ -34,7 +34,7 @@ interface BuilderInterface
      * @param string $type
      * @return BuilderInterface
      */
-    public function join($source, $conditions = null, $alias = null, $type = null);
+    public function join($from, $source, $conditions = null, $alias = null, $type = null);
     
     /**
      * @param string $cond
@@ -66,6 +66,6 @@ interface BuilderInterface
      * @param string $orderBy
      * @return BuilderInterface
      */
-    public function orderBy($orderBy);
+    public function orderBy($orderBy, $direction);
     
 }

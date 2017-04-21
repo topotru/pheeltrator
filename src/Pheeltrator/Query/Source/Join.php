@@ -14,10 +14,10 @@ namespace TopoTrue\Pheeltrator\Query\Source;
  */
 class Join
 {
-    const INNER = 1;
-    const OUTER = 2;
-    const LEFT  = 3;
-    const RIGHT = 4;
+    const INNER = "INNER";
+    const FULL  = "FULL OUTER";
+    const LEFT  = "LEFT";
+    const RIGHT = "LEFT";
     
     /**
      * @var SourceInterface

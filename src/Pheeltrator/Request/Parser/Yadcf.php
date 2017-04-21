@@ -7,6 +7,7 @@
  */
 
 namespace TopoTrue\Pheeltrator\Request\Parser;
+use TopoTrue\Pheeltrator\Response\YadcfResult;
 
 /**
  * Class Yadcf
@@ -88,6 +89,17 @@ class Yadcf extends Parser
             $this->offset = (int)$this->data[self::KEY_START];
         }
         
+    }
+    
+    /**
+     * @param array $items
+     * @return YadcfResult
+     */
+    public function getResultObject(array $items)
+    {
+        //echo '<pre>', print_r($items), '</pre>';
+        //die();
+        return new YadcfResult($this, $items);
     }
     
 }
