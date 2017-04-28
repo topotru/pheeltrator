@@ -33,4 +33,19 @@ interface SourceInterface
      */
     public function getSelectFields();
     
+    /**
+     * @param string $where
+     */
+    public function addWhere($where);
+    
+    /**
+     * @return array
+     */
+    public function getWheres();
+    
+    /**
+     * @return bool
+     */
+    public function hasWheres();
+    
 }

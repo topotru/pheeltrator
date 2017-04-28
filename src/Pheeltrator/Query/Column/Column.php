@@ -66,16 +66,6 @@ class Column extends AbstractColumn
     }
     
     /**
-     * @param string $alias
-     * @return Column
-     */
-    public function setAlias($alias)
-    {
-        $this->alias = $alias;
-        return $this;
-    }
-    
-    /**
      * @param string $expression
      * @return Column
      */
@@ -105,5 +95,14 @@ class Column extends AbstractColumn
         return $this;
     }
     
+    /**
+     * @param $aggregate
+     * @return Column
+     */
+    public function setAggregate($aggregate)
+    {
+        $this->aggregate = $aggregate;
+        return $this;
+    }
     
 }

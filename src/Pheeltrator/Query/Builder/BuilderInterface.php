@@ -51,9 +51,10 @@ interface BuilderInterface
     public function execute(array $binds = []);
     
     /**
+     * @param string $field
      * @return int
      */
-    public function count();
+    public function count($field);
     
     /**
      * @param int $limit
@@ -67,5 +68,11 @@ interface BuilderInterface
      * @return BuilderInterface
      */
     public function orderBy($orderBy, $direction);
+    
+    /**
+     * @param string $groupBy
+     * @return BuilderInterface
+     */
+    public function groupBy($groupBy);
     
 }

@@ -17,7 +17,7 @@ class Join
     const INNER = "INNER";
     const FULL  = "FULL OUTER";
     const LEFT  = "LEFT";
-    const RIGHT = "LEFT";
+    const RIGHT = "RIGHT";
     
     /**
      * @var SourceInterface
@@ -40,7 +40,7 @@ class Join
      * @param string $condition
      * @param int $type
      */
-    public function __construct(SourceInterface $source, $condition, $type = self::INNER)
+    public function __construct(SourceInterface $source, $condition, $type = self::LEFT)
     {
         $this->source    = $source;
         $this->condition = $condition;

@@ -28,7 +28,7 @@ class ImmutableColumn extends AbstractColumn
     public function __construct($name, $field, $source, $alias = null, $expression = null, callable $value = null, callable $transform = null, $type = null)
     {
         $this->name       = $name;
-        $this->field      = $field;
+        $this->fields[]   = $field;
         $this->type       = $type;
         $this->source     = $source;
         $this->expression = $expression;

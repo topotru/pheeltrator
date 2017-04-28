@@ -25,11 +25,6 @@ abstract class AbstractColumn implements ColumnInterface
     protected $name;
     
     /**
-     * @var string
-     */
-    protected $field;
-    
-    /**
      * @var array
      */
     protected $fields = [];
@@ -66,6 +61,11 @@ abstract class AbstractColumn implements ColumnInterface
     protected $transform;
     
     /**
+     * @var string
+     */
+    protected $aggregate;
+    
+    /**
      * @return string
      */
     public function getName()
@@ -90,6 +90,14 @@ abstract class AbstractColumn implements ColumnInterface
     }
     
     /**
+     * @return bool
+     */
+    public function isMultiField()
+    {
+        return count($this->fields) > 1;
+    }
+    
+    /**
      * @return string
      */
     public function getType()
@@ -106,11 +114,18 @@ abstract class AbstractColumn implements ColumnInterface
     }
     
     /**
+     * @param string $field
      * @return string
      */
-    public function getAlias()
+    public function getAlias($field = null)
     {
-        return $this->alias ? $this->alias : $this->getName();
+        if (is_null($field)) {
+            if (empty($this->fields)) {
+                return null;
+            }
+            $field = $this->fields[0];
+        }
+        return $this->isMultiField() ? "_{$this->getSource()->getAlias()}_{$field}" : $this->getName();
     }
     
     /**
@@ -212,5 +227,21 @@ abstract class AbstractColumn implements ColumnInterface
     public function isDate()
     {
         return $this->type === self::TYPE_DATE;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getAggregate()
+    {
+        return $this->aggregate;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasAggregate()
+    {
+        return ! empty($this->aggregate);
     }
 }

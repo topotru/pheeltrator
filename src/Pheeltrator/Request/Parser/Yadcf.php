@@ -95,11 +95,9 @@ class Yadcf extends Parser
      * @param array $items
      * @return YadcfResult
      */
-    public function getResultObject(array $items)
+    public function getResultObject(array $items, array $additional = [])
     {
-        //echo '<pre>', print_r($items), '</pre>';
-        //die();
-        return new YadcfResult($this, $items);
+        return new YadcfResult($this, $items, $additional);
     }
     
 }

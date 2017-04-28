@@ -33,6 +33,11 @@ class Source implements SourceInterface
     protected $select;
     
     /**
+     * @var array
+     */
+    protected $wheres = [];
+    
+    /**
      * Source constructor.
      * @param string $name
      * @param string $alias
@@ -78,4 +83,29 @@ class Source implements SourceInterface
     {
         return "{$this->getAlias()}.{$field}";
     }
+    
+    /**
+     * @param string $where
+     */
+    public function addWhere($where)
+    {
+        $this->wheres[] = $where;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getWheres()
+    {
+        return $this->wheres;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasWheres()
+    {
+        return ! empty($this->wheres);
+    }
+    
 }

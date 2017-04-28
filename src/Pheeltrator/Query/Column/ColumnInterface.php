@@ -41,9 +41,10 @@ interface ColumnInterface
     public function getSource();
     
     /**
+     * @param string $field
      * @return string
      */
-    public function getAlias();
+    public function getAlias($field = null);
     
     /**
      * @return string
@@ -106,4 +107,19 @@ interface ColumnInterface
      * @return bool
      */
     public function isDate();
+    
+    /**
+     * @return string
+     */
+    public function getAggregate();
+    
+    /**
+     * @return bool
+     */
+    public function hasAggregate();
+    
+    /**
+     * @return bool
+     */
+    public function isMultiField();
 }

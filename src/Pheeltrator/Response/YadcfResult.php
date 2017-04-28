@@ -28,14 +28,20 @@ class YadcfResult implements ResultInterface
     protected $items;
     
     /**
+     * @var array
+     */
+    protected $additional;
+    
+    /**
      * YadcfResult constructor.
      * @param Yadcf $parser
      * @param array $items
      */
-    public function __construct(Yadcf $parser, array $items = [])
+    public function __construct(Yadcf $parser, array $items = [], array $additional = [])
     {
-        $this->parser = $parser;
-        $this->items  = $items;
+        $this->parser     = $parser;
+        $this->items      = $items;
+        $this->additional = $additional;
     }
     
     
@@ -44,11 +50,35 @@ class YadcfResult implements ResultInterface
      */
     public function getData()
     {
-        return [
+        return array_merge([
             'draw'            => $this->parser->getData('draw'),
             'recordsTotal'    => $this->items['total'],
             'recordsFiltered' => $this->items['filtered'],
             'data'            => $this->items['data'],
-        ];
+        ], $this->makeAdditional());
+    }
+    
+    /**
+     * @return array
+     */
+    protected function makeAdditional()
+    {
+        $out = [];
+        foreach ($this->additional as $fld => $items) {
+            
+            $index = $this->parser->getFieldIndex($fld);
+            
+            if(false === $index){
+                continue;
+            }
+            
+            $key = "yadcf_data_{$this->parser->getFieldIndex($fld)}";
+    
+            foreach ($items as $_k => $_v) {
+                $out[$key][] = ["value" => "{$_k}", "label" => "{$_v}"];
+            }
+            
+        }
+        return $out;
     }
 }

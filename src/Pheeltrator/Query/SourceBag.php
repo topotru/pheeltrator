@@ -26,7 +26,7 @@ class SourceBag
     protected $source;
     
     /**
-     * @var \TopoTrue\Pheeltrator\Query\Column\ColumnCollectionInterface
+     * @var ColumnCollectionInterface
      */
     protected $columns;
     
@@ -34,6 +34,11 @@ class SourceBag
      * @var Join[]
      */
     protected $joins = [];
+    
+    /**
+     * @var string
+     */
+    protected $group_by;
     
     /**
      * SourceBag constructor.
@@ -76,10 +81,14 @@ class SourceBag
                 //echo $column->getName()." | {$column->aliased()}";
                 if ($column->getSource() === $source) {
                     $flds = [];
-                    $many = count($column->getFields()) > 1;
                     foreach ($column->getFields() as $field) {
-                        $alias = $many ? "_{$column->getSource()->getAlias()}_{$field}" : $column->getAlias();
-                        $flds[] = "{$column->getSource()->aliased($field)} as {$alias}";
+                        $alias = $column->getAlias($field);
+                        if ($column->hasAggregate()) {
+                            $flds[] = "{$column->getAggregate()}({$field}) as {$alias}";
+                        } else {
+                            $flds[] = "{$column->getSource()->aliased($field)} as {$alias}";
+                        }
+                        
                     }
                     $out[$column->getName()] = implode(',', $flds);
                 }
@@ -109,7 +118,7 @@ class SourceBag
     }
     
     /**
-     * @return \TopoTrue\Pheeltrator\Query\Column\ColumnCollectionInterface|ColumnInterface[]
+     * @return ColumnCollectionInterface|ColumnInterface[]
      */
     public function getColumns()
     {
@@ -124,4 +133,29 @@ class SourceBag
         return $this->joins;
     }
     
+    /**
+     * @return string
+     */
+    public function getGroupBy()
+    {
+        return $this->group_by;
+    }
+    
+    /**
+     * @param string $group_by
+     * @return SourceBag
+     */
+    public function setGroupBy($group_by)
+    {
+        $this->group_by = $group_by;
+        return $this;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasGroupBy()
+    {
+        return ! empty($this->getGroupBy());
+    }
 }

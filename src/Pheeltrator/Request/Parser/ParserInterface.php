@@ -81,6 +81,6 @@ interface ParserInterface
     /**
      * @return ResultInterface
      */
-    public function getResultObject(array $items);
+    public function getResultObject(array $items, array $additional = []);
     
 }
