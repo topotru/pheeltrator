@@ -8,6 +8,8 @@
 
 namespace TopoTrue\Pheeltrator\Query\Column;
 
+use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
+
 
 /**
  * Class ColumnInterface
@@ -36,7 +38,7 @@ interface ColumnInterface
     public function getType();
     
     /**
-     * @return \TopoTrue\Pheeltrator\Query\Source\SourceInterface
+     * @return SourceInterface
      */
     public function getSource();
     
@@ -47,6 +49,7 @@ interface ColumnInterface
     public function getAlias($field = null);
     
     /**
+     * @param bool $with_as
      * @return string
      */
     public function aliased($with_as = false);

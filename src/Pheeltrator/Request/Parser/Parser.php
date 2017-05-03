@@ -15,8 +15,6 @@ namespace TopoTrue\Pheeltrator\Request\Parser;
  */
 abstract class Parser implements ParserInterface
 {
-    
-    
     /**
      * @var array
      */

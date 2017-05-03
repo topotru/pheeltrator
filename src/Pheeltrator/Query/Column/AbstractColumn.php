@@ -129,12 +129,13 @@ abstract class AbstractColumn implements ColumnInterface
     }
     
     /**
+     * @param bool $with_as
      * @return string
      */
     public function aliased($with_as = false)
     {
         //return "{$this->getSource()->getAlias()}.{$this->getField()}";
-        return $this->getSource()->aliased($this->getField()).($with_as ? " as {$column->getAlias()}" : '');
+        return $this->getSource()->aliased($this->getField()).($with_as ? " as {$this->getAlias()}" : '');
     }
     
     /**

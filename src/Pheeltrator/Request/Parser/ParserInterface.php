@@ -79,6 +79,8 @@ interface ParserInterface
     public function getData($key = null);
     
     /**
+     * @param array $items
+     * @param array $additional
      * @return ResultInterface
      */
     public function getResultObject(array $items, array $additional = []);

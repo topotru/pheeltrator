@@ -7,6 +7,7 @@
  */
 
 namespace TopoTrue\Pheeltrator\Request\Parser;
+
 use TopoTrue\Pheeltrator\Response\YadcfResult;
 
 /**
@@ -54,9 +55,9 @@ class Yadcf extends Parser
                     
                     if (stripos($val, self::DELIMITER) !== false) {
                         
-                        $vals = explode(self::DELIMITER, $val);
+                        $values = explode(self::DELIMITER, $val);
                         //
-                        $this->filters[$column[self::KEY_DATA]] = $vals;
+                        $this->filters[$column[self::KEY_DATA]] = $values;
                         
                     } else {
                         $this->filters[$column[self::KEY_DATA]] = $val;
@@ -88,11 +89,11 @@ class Yadcf extends Parser
         if (isset($this->data[self::KEY_START]) && $this->data[self::KEY_START]) {
             $this->offset = (int)$this->data[self::KEY_START];
         }
-        
     }
     
     /**
      * @param array $items
+     * @param array $additional
      * @return YadcfResult
      */
     public function getResultObject(array $items, array $additional = [])

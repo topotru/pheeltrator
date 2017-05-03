@@ -78,21 +78,18 @@ class SourceBag
             $out[] = $source->aliased('*');
         } else {
             foreach ($this->getColumns() as $column) {
-                //echo $column->getName()." | {$column->aliased()}";
                 if ($column->getSource() === $source) {
-                    $flds = [];
+                    $fields = [];
                     foreach ($column->getFields() as $field) {
                         $alias = $column->getAlias($field);
                         if ($column->hasAggregate()) {
-                            $flds[] = "{$column->getAggregate()}({$field}) as {$alias}";
+                            $fields[] = "{$column->getAggregate()}({$field}) as {$alias}";
                         } else {
-                            $flds[] = "{$column->getSource()->aliased($field)} as {$alias}";
+                            $fields[] = "{$column->getSource()->aliased($field)} as {$alias}";
                         }
-                        
                     }
-                    $out[$column->getName()] = implode(',', $flds);
+                    $out[$column->getName()] = implode(',', $fields);
                 }
-                //echo '<pre>', print_r($out), '</pre>';
             }
         }
         return $out;
@@ -100,12 +97,11 @@ class SourceBag
     
     /**
      * @param Join $join
-     * @return $this
+     * @return SourceBag
      */
     public function join(Join $join)
     {
         $this->joins[] = $join;
-        //$this->sources[] = $join->getSource();
         return $this;
     }
     

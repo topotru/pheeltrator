@@ -88,7 +88,7 @@ class Manager
     }
     
     /**
-     * @param \TopoTrue\Pheeltrator\Query\Column\ColumnInterface $column
+     * @param ColumnInterface $column
      * @return mixed|null
      */
     private function prepareValue(ColumnInterface $column)
@@ -99,55 +99,53 @@ class Manager
     }
     
     /**
-     * @param \TopoTrue\Pheeltrator\Query\Column\ColumnInterface $column
+     * @param ColumnInterface $column
      */
     protected function addBetween(ColumnInterface $column)
     {
         $values = $this->prepareValue($column);
-        $alias  = $column->getSource()->getAlias();
+        $col    = $column->aliased();
+        $key    = str_replace('.', '_', $col);
         if (! $values[1]) {
             $values[1] = $column->isDate() ? date('j.m.Y') : $values[0];
         }
-        $this->builder->andWhere("( {$alias}.{$column->getField()} BETWEEN :{$column->getField()}_1 AND :{$column->getField()}_2 )", [
-            ":{$column->getField()}_1" => $column->isDate() ? date('Y-m-d', strtotime($values[0])) : $values[0],
-            ":{$column->getField()}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
+        $this->builder->andWhere("( {$col} BETWEEN :{$key}_1 AND :{$key}_2 )", [
+            ":{$key}_1" => $column->isDate() ? date('Y-m-d', strtotime($values[0])) : $values[0],
+            ":{$key}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
         ]);
-        
-        $this->has_filters        = true;
         $this->filtered_sources[] = $column->getSource()->getName();
     }
     
     /**
-     * @param \TopoTrue\Pheeltrator\Query\Column\ColumnInterface $column
+     * @param ColumnInterface $column
      */
     protected function addLike(ColumnInterface $column)
     {
         $value = $this->prepareValue($column);
         if ((string)$value) {
-            $key   = $column->getField();
-            $alias = $column->getSource()->getAlias();
-            $this->builder->andWhere("( {$alias}.{$key} LIKE :{$key}_1 OR {$alias}.{$key} LIKE :{$key}_2 OR {$alias}.{$key} LIKE :{$key}_3 OR {$alias}.{$key} LIKE :{$key}_4 )", [
+            $col = $column->aliased();
+            $key = str_replace('.', '_', $col);
+            $this->builder->andWhere("( {$col} LIKE :{$key}_1 OR {$col} LIKE :{$key}_2 OR {$col} LIKE :{$key}_3 OR {$col} LIKE :{$key}_4 )", [
                 ":{$key}_1" => "{$value}%",
                 ":{$key}_2" => "%{$value}%",
                 ":{$key}_3" => "%{$value}",
                 ":{$key}_4" => "{$value}",
             ]);
-            $this->has_filters        = true;
             $this->filtered_sources[] = $column->getSource()->getName();
         }
     }
     
     /**
-     * @param \TopoTrue\Pheeltrator\Query\Column\ColumnInterface $column
+     * @param ColumnInterface $column
      */
     protected function addEqual(ColumnInterface $column)
     {
         $value = $this->prepareValue($column);
-        $alias = $column->getSource()->getAlias();
-        $this->builder->andWhere("( {$alias}.{$column->getField()} = :{$column->getField()}_1 )", [
-            ":{$column->getField()}_1" => $value,
+        $col   = $column->aliased();
+        $key   = str_replace('.', '_', $col);
+        $this->builder->andWhere("( {$col} = :{$key}_1 )", [
+            ":{$key}_1" => $value,
         ]);
-        $this->has_filters        = true;
         $this->filtered_sources[] = $column->getSource()->getName();
     }
     

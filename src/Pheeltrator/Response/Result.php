@@ -14,8 +14,6 @@ namespace TopoTrue\Pheeltrator\Response;
  */
 class Result implements ResultInterface
 {
-    
-    
     /**
      * @return array
      */

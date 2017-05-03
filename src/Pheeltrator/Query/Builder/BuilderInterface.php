@@ -54,7 +54,7 @@ interface BuilderInterface
      * @param string $field
      * @return int
      */
-    public function count($field);
+    public function count($field = '*');
     
     /**
      * @param int $limit
@@ -65,6 +65,7 @@ interface BuilderInterface
     
     /**
      * @param string $orderBy
+     * @param string $direction
      * @return BuilderInterface
      */
     public function orderBy($orderBy, $direction);

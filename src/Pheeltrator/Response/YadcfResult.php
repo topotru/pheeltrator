@@ -36,6 +36,7 @@ class YadcfResult implements ResultInterface
      * YadcfResult constructor.
      * @param Yadcf $parser
      * @param array $items
+     * @param array $additional
      */
     public function __construct(Yadcf $parser, array $items = [], array $additional = [])
     {
@@ -68,12 +69,12 @@ class YadcfResult implements ResultInterface
             
             $index = $this->parser->getFieldIndex($fld);
             
-            if(false === $index){
+            if (false === $index) {
                 continue;
             }
             
             $key = "yadcf_data_{$this->parser->getFieldIndex($fld)}";
-    
+            
             foreach ($items as $_k => $_v) {
                 $out[$key][] = ["value" => "{$_k}", "label" => "{$_v}"];
             }
