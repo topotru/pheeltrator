@@ -134,7 +134,6 @@ abstract class AbstractColumn implements ColumnInterface
      */
     public function aliased($with_as = false)
     {
-        //return "{$this->getSource()->getAlias()}.{$this->getField()}";
         return $this->getSource()->aliased($this->getField()).($with_as ? " as {$this->getAlias()}" : '');
     }
     
