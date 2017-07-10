@@ -101,7 +101,7 @@ class SourceBag
      */
     public function join(Join $join)
     {
-        $this->joins[] = $join;
+        $this->joins[$join->getSource()->getName()] = $join;
         return $this;
     }
     
@@ -127,6 +127,24 @@ class SourceBag
     public function getJoins()
     {
         return $this->joins;
+    }
+    
+    /**
+     * @param string $name
+     * @return null|Join
+     */
+    public function getJoinBySourceName($name)
+    {
+        return isset($this->joins[$name]) ? $this->joins[$name] : null;
+    }
+    
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasJoin($name)
+    {
+        return isset($this->joins[$name]);
     }
     
     /**

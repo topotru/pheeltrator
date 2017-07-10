@@ -11,6 +11,8 @@ namespace TopoTrue\Pheeltrator\Query;
 
 use TopoTrue\Pheeltrator\Query\Builder\BuilderInterface;
 use TopoTrue\Pheeltrator\Query\Column\ColumnInterface;
+use TopoTrue\Pheeltrator\Query\Source\Join;
+use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
 use TopoTrue\Pheeltrator\Request\Parser\ParserInterface;
 
 
@@ -24,6 +26,8 @@ class Manager
     const CONDITION_LIKE    = 'like';
     const CONDITION_EQUAL   = 'equal';
     const CONDITION_BETWEEN = 'between';
+    const CONDITION_MASK    = 'mask';
+    const CONDITION_IN      = 'in';
     
     /**
      * @var bool
@@ -49,6 +53,11 @@ class Manager
      * @var array
      */
     protected $filtered_sources = [];
+    
+    /**
+     * @var array
+     */
+    protected $joined_sources = [];
     
     /**
      * Manager constructor.
@@ -80,6 +89,12 @@ class Manager
                     case self::CONDITION_LIKE:
                         $this->addLike($column);
                         break;
+                    case self::CONDITION_MASK:
+                        $this->addMask($column);
+                        break;
+                    /*case self::CONDITION_IN:
+                        $this->addIn($column);
+                        break;*/
                     default:
                         break;
                 }
@@ -150,6 +165,20 @@ class Manager
     }
     
     /**
+     * @param ColumnInterface $column
+     */
+    protected function addMask(ColumnInterface $column)
+    {
+        $value = $this->prepareValue($column);
+        $col   = $column->aliased();
+        $key   = str_replace('.', '_', $col);
+        $this->builder->andWhere("( {$col} & :{$key}_1 )", [
+            ":{$key}_1" => 0 | 1 << ($value - 1),
+        ]);
+        $this->filtered_sources[] = $column->getSource()->getName();
+    }
+    
+    /**
      * @return bool
      */
     public function hasFilters()
@@ -167,11 +196,42 @@ class Manager
     }
     
     /**
-     * @return mixed
+     * @param string $source_name
+     * @return bool
+     */
+    protected function sourceJoined($source_name)
+    {
+        return in_array($source_name, $this->joined_sources);
+    }
+    
+    /**
+     * @param Join $join
+     */
+    private function applyJoin(Join $join)
+    {
+        if ($join->hasJoiner() && $join->getJoiner() !== $this->sourceBag->getSource() && ! $this->sourceJoined($join->getJoiner()->getName())) {
+            $joinerJoin = $this->sourceBag->getJoinBySourceName($join->getJoiner()->getName());
+            if (! is_null($joinerJoin)) {
+                $this->applyJoin($joinerJoin);
+            }
+        }
+        
+        $this->builder->join(
+            $this->sourceBag->getSource()->getAlias(),
+            $join->getSource()->getName(),
+            $join->getCondition(),
+            $join->getSource()->getAlias(),
+            $join->getType()
+        );
+        
+        $this->joined_sources[] = $join->getSource()->getName();
+    }
+    
+    /**
+     * @return array
      */
     public function execute()
     {
-        
         $out = [];
         
         $this->builder->from($this->sourceBag->getSource()->getName(), $this->sourceBag->getSource()->getAlias());
@@ -188,22 +248,10 @@ class Manager
         
         $this->applyExpressions();
         
-        
-        // TODO: сделать в Join чтото типа JoinerSourse
-        // TODO: куда включать сорс если это не корневой сорс
-        
-        
-        // TODO: это вынести
         // джойним сначала сорсы тока по фильтрам для каунта
         foreach ($this->sourceBag->getJoins() as $join) {
             if ($this->sourceFiltered($join->getSource()->getName())) {
-                $this->builder->join(
-                    $this->sourceBag->getSource()->getAlias(),
-                    $join->getSource()->getName(),
-                    $join->getCondition(),
-                    $join->getSource()->getAlias(),
-                    $join->getType()
-                );
+                $this->applyJoin($join);
             }
         }
         
@@ -213,17 +261,10 @@ class Manager
             $out['filtered'] = $out['total'];
         }
         
-        // TODO: это вынести
         // потом джойним все остальные
         foreach ($this->sourceBag->getJoins() as $join) {
-            if (! $this->sourceFiltered($join->getSource()->getName())) {
-                $this->builder->join(
-                    $this->sourceBag->getSource()->getAlias(),
-                    $join->getSource()->getName(),
-                    $join->getCondition(),
-                    $join->getSource()->getAlias(),
-                    $join->getType()
-                );
+            if (! $this->sourceJoined($join->getSource()->getName())) {
+                $this->applyJoin($join);
             }
         }
         
@@ -257,11 +298,9 @@ class Manager
                             $val[$field] = $item[$_key];
                         }
                         
-                        
                     } else {
                         $val = $item[$key];
                     }
-                    
                     
                 } else {
                     $val = $item->{$key};
@@ -274,4 +313,5 @@ class Manager
         return $out;
         
     }
+    
 }
