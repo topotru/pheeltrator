@@ -25,6 +25,11 @@ class Join
     protected $source;
     
     /**
+     * @var SourceInterface
+     */
+    protected $joiner;
+    
+    /**
      * @var string
      */
     protected $condition;
@@ -40,9 +45,10 @@ class Join
      * @param string $condition
      * @param string $type
      */
-    public function __construct(SourceInterface $source, $condition, $type = self::LEFT)
+    public function __construct(SourceInterface $source, $condition, SourceInterface $joiner = null, $type = self::LEFT)
     {
         $this->source    = $source;
+        $this->joiner    = $joiner;
         $this->condition = $condition;
         $this->type      = $type;
     }
@@ -69,6 +75,22 @@ class Join
     public function getType()
     {
         return $this->type;
+    }
+    
+    /**
+     * @return SourceInterface
+     */
+    public function getJoiner()
+    {
+        return $this->joiner;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasJoiner()
+    {
+        return null !== $this->joiner;
     }
     
 }

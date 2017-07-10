@@ -189,6 +189,10 @@ class Manager
         $this->applyExpressions();
         
         
+        // TODO: сделать в Join чтото типа JoinerSourse
+        // TODO: куда включать сорс если это не корневой сорс
+        
+        
         // TODO: это вынести
         // джойним сначала сорсы тока по фильтрам для каунта
         foreach ($this->sourceBag->getJoins() as $join) {
