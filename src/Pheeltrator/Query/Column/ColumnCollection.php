@@ -44,6 +44,9 @@ class ColumnCollection implements ColumnCollectionInterface
      */
     public function getByName($name)
     {
+        if (false !== strpos($name, '.')) {
+            $name = strstr($name, '.', true);
+        }
         foreach ($this->columns as $column) {
             if ($column->getName() == $name) {
                 return $column;

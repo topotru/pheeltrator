@@ -45,9 +45,15 @@ class Yadcf extends Parser
                     continue;
                 }
                 
-                $this->fields[$i] = $column[self::KEY_DATA];
+                if (false !== strpos($column[self::KEY_DATA], '.')) {
+                    $name = strstr($column[self::KEY_DATA], '.', true);
+                } else {
+                    $name = $column[self::KEY_DATA];
+                }
                 
-                // todo проверять $column[self::KEY_DATA] a-z0-9-_.
+                $this->fields[$i] = $name;
+                
+                // todo проверять $name a-z0-9-_.
                 
                 $val = trim($column[self::KEY_SEARCH][self::KEY_VALUE], " \t\n\r\0\x0B\/");
                 
@@ -57,10 +63,10 @@ class Yadcf extends Parser
                         
                         $values = explode(self::DELIMITER, $val);
                         //
-                        $this->filters[$column[self::KEY_DATA]] = $values;
+                        $this->filters[$name] = $values;
                         
                     } else {
-                        $this->filters[$column[self::KEY_DATA]] = $val;
+                        $this->filters[$name] = $val;
                     }
                 }
             }
