@@ -45,11 +45,13 @@ class Yadcf extends Parser
                     continue;
                 }
                 
-                if (false !== strpos($column[self::KEY_DATA], '.')) {
+                /*if (false !== strpos($column[self::KEY_DATA], '.')) {
                     $name = strstr($column[self::KEY_DATA], '.', true);
                 } else {
                     $name = $column[self::KEY_DATA];
-                }
+                }*/
+    
+                $name = $column[self::KEY_DATA];
                 
                 $this->fields[$i] = $name;
                 

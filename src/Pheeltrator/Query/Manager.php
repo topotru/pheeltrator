@@ -139,7 +139,7 @@ class Manager
         if ((string)$value) {
             $col = $column->forSearch();
             $key = str_replace('.', '_', $col);
-            $this->builder->andWhere("( {$col} LIKE :{$key}_1 OR {$col} LIKE :{$key}_2 OR {$col} LIKE :{$key}_3 OR {$col} LIKE :{$key}_4 )", [
+            $this->builder->andWhere("( LOWER({$col}) LIKE LOWER(:{$key}_1) OR LOWER({$col}) LIKE LOWER(:{$key}_2) OR LOWER({$col}) LIKE LOWER(:{$key}_3) OR LOWER({$col}) LIKE (:{$key}_4) )", [
                 ":{$key}_1" => "{$value}%",
                 ":{$key}_2" => "%{$value}%",
                 ":{$key}_3" => "%{$value}",
