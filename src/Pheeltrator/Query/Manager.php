@@ -12,7 +12,6 @@ namespace TopoTrue\Pheeltrator\Query;
 use TopoTrue\Pheeltrator\Query\Builder\BuilderInterface;
 use TopoTrue\Pheeltrator\Query\Column\ColumnInterface;
 use TopoTrue\Pheeltrator\Query\Source\Join;
-use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
 use TopoTrue\Pheeltrator\Request\Parser\ParserInterface;
 
 
@@ -119,7 +118,7 @@ class Manager
     protected function addBetween(ColumnInterface $column)
     {
         $values = $this->prepareValue($column);
-        $col    = $column->aliased();
+        $col    = $column->forSearch();
         $key    = str_replace('.', '_', $col);
         if (! $values[1]) {
             $values[1] = $column->isDate() ? date('j.m.Y') : $values[0];
@@ -138,7 +137,7 @@ class Manager
     {
         $value = $this->prepareValue($column);
         if ((string)$value) {
-            $col = $column->aliased();
+            $col = $column->forSearch();
             $key = str_replace('.', '_', $col);
             $this->builder->andWhere("( {$col} LIKE :{$key}_1 OR {$col} LIKE :{$key}_2 OR {$col} LIKE :{$key}_3 OR {$col} LIKE :{$key}_4 )", [
                 ":{$key}_1" => "{$value}%",
@@ -156,7 +155,7 @@ class Manager
     protected function addEqual(ColumnInterface $column)
     {
         $value = $this->prepareValue($column);
-        $col   = $column->aliased();
+        $col   = $column->forSearch();
         $key   = str_replace('.', '_', $col);
         $this->builder->andWhere("( {$col} = :{$key}_1 )", [
             ":{$key}_1" => $value,
@@ -170,7 +169,7 @@ class Manager
     protected function addMask(ColumnInterface $column)
     {
         $value = $this->prepareValue($column);
-        $col   = $column->aliased();
+        $col   = $column->forSearch();
         $key   = str_replace('.', '_', $col);
         $this->builder->andWhere("( {$col} & :{$key}_1 )", [
             ":{$key}_1" => 0 | 1 << ($value - 1),
@@ -279,7 +278,8 @@ class Manager
         $this->builder->limit($this->parser->getLimit(), $this->parser->getOffset());
         
         foreach ($this->parser->getOrder() as $order) {
-            $this->builder->orderBy($columns->getByName($order[0])->getAlias(), $order[1]);
+            $column = $columns->getByName($order[0]);
+            $this->builder->orderBy($column->getAlias($column->getSortField()), $order[1]);
         }
         
         $items = $this->builder->execute();

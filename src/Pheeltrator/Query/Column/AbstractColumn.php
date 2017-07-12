@@ -32,6 +32,16 @@ abstract class AbstractColumn implements ColumnInterface
     /**
      * @var string
      */
+    protected $search_field;
+    
+    /**
+     * @var string
+     */
+    protected $sort_field;
+    
+    /**
+     * @var string
+     */
     protected $type;
     
     /**
@@ -100,6 +110,22 @@ abstract class AbstractColumn implements ColumnInterface
     /**
      * @return string
      */
+    public function getSearchField()
+    {
+        return ! is_null($this->search_field) ? $this->search_field : $this->getField();
+    }
+    
+    /**
+     * @return string
+     */
+    public function getSortField()
+    {
+        return ! is_null($this->sort_field) ? $this->sort_field : $this->getField();
+    }
+    
+    /**
+     * @return string
+     */
     public function getType()
     {
         return $this->type;
@@ -135,6 +161,14 @@ abstract class AbstractColumn implements ColumnInterface
     public function aliased($with_as = false)
     {
         return $this->getSource()->aliased($this->getField()).($with_as ? " as {$this->getAlias()}" : '');
+    }
+    
+    /**
+     * @return string
+     */
+    public function forSearch()
+    {
+        return $this->getSource()->aliased($this->getSearchField());
     }
     
     /**

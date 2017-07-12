@@ -28,6 +28,16 @@ interface ColumnInterface
     public function getField();
     
     /**
+     * @return string
+     */
+    public function getSortField();
+    
+    /**
+     * @return string
+     */
+    public function getSearchField();
+    
+    /**
      * @return array
      */
     public function getFields();
@@ -53,6 +63,11 @@ interface ColumnInterface
      * @return string
      */
     public function aliased($with_as = false);
+    
+    /**
+     * @return string
+     */
+    public function forSearch();
     
     /**
      * @return string

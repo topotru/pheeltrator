@@ -46,6 +46,26 @@ class Column extends AbstractColumn
     }
     
     /**
+     * @param string $search_field
+     * @return Column
+     */
+    public function setSearchField($search_field)
+    {
+        $this->search_field = $search_field;
+        return $this;
+    }
+    
+    /**
+     * @param string $sort_field
+     * @return Column
+     */
+    public function setSortField($sort_field)
+    {
+        $this->sort_field = $sort_field;
+        return $this;
+    }
+    
+    /**
      * @param string $type
      * @return Column
      */
