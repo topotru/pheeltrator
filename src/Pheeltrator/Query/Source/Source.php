@@ -38,16 +38,23 @@ class Source implements SourceInterface
     protected $wheres = [];
     
     /**
+     * @var array
+     */
+    protected $group_by_fields = [];
+    
+    /**
      * Source constructor.
      * @param string $name
      * @param string $alias
      * @param int $select
      */
-    public function __construct($name, $alias = null, $select = self::SELECT_COLUMNS)
+    public function __construct($name, array $group_by_fields = [], $alias = null, $select = self::SELECT_COLUMNS)
     {
         $this->name   = $name;
         $this->alias  = ! is_null($alias) ? $alias : strtolower(preg_replace('/[^a-z0-9_]/i', '_', $this->name));
         $this->select = $select;
+        //
+        $this->group_by_fields = $group_by_fields;
     }
     
     /**
@@ -106,6 +113,25 @@ class Source implements SourceInterface
     public function hasWheres()
     {
         return ! empty($this->wheres);
+    }
+    
+    /**
+     * @param bool $aliased
+     * @return array
+     */
+    public function getGroupByFields($aliased = false)
+    {
+        return $aliased ? array_map(function ($field) {
+            return $this->aliased($field);
+        }, $this->group_by_fields) : $this->group_by_fields;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasGroupByFields()
+    {
+        return ! empty($this->group_by_fields);
     }
     
 }

@@ -76,6 +76,11 @@ abstract class AbstractColumn implements ColumnInterface
     protected $aggregate;
     
     /**
+     * @var string
+     */
+    protected $aggregate_expr;
+    
+    /**
      * @return string
      */
     public function getName()
@@ -269,6 +274,26 @@ abstract class AbstractColumn implements ColumnInterface
     public function getAggregate()
     {
         return $this->aggregate;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getAggregateExpr()
+    {
+        return $this->aggregate_expr;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getFullAggregateExpr()
+    {
+        if ($this->hasAggregate()) {
+            $expr = ! is_null($this->aggregate_expr) ? $this->aggregate_expr : $this->getField();
+            return "{$this->getAggregate()}({$expr})";
+        }
+        return $this->getField();
     }
     
     /**

@@ -83,7 +83,7 @@ class SourceBag
                     foreach ($column->getFields() as $field) {
                         $alias = $column->getAlias($field);
                         if ($column->hasAggregate()) {
-                            $fields[] = "{$column->getAggregate()}({$field}) as {$alias}";
+                            $fields[] = "{$column->getFullAggregateExpr()} as {$alias}";
                         } else {
                             $fields[] = "{$column->getSource()->aliased($field)} as {$alias}";
                         }

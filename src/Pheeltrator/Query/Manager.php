@@ -12,6 +12,7 @@ namespace TopoTrue\Pheeltrator\Query;
 use TopoTrue\Pheeltrator\Query\Builder\BuilderInterface;
 use TopoTrue\Pheeltrator\Query\Column\ColumnInterface;
 use TopoTrue\Pheeltrator\Query\Source\Join;
+use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
 use TopoTrue\Pheeltrator\Request\Parser\ParserInterface;
 
 
@@ -123,10 +124,17 @@ class Manager
         if (! $values[1]) {
             $values[1] = $column->isDate() ? date('j.m.Y') : $values[0];
         }
-        $this->builder->andWhere("( {$col} BETWEEN :{$key}_1 AND :{$key}_2 )", [
-            ":{$key}_1" => $column->isDate() ? date('Y-m-d', strtotime($values[0])) : $values[0],
-            ":{$key}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
-        ]);
+        if ($column->hasAggregate()) {
+            $this->builder->andHaving("( {$column->getFullAggregateExpr()} BETWEEN :{$key}_1 AND :{$key}_2 )", [
+                ":{$key}_1" => $column->isDate() ? date('Y-m-d', strtotime($values[0])) : $values[0],
+                ":{$key}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
+            ]);
+        } else {
+            $this->builder->andWhere("( {$col} BETWEEN :{$key}_1 AND :{$key}_2 )", [
+                ":{$key}_1" => $column->isDate() ? date('Y-m-d', strtotime($values[0])) : $values[0],
+                ":{$key}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
+            ]);
+        }
         $this->filtered_sources[] = $column->getSource()->getName();
     }
     
@@ -186,21 +194,21 @@ class Manager
     }
     
     /**
-     * @param string $source_name
+     * @param SourceInterface $source
      * @return bool
      */
-    protected function sourceFiltered($source_name)
+    protected function isFilteredSource($source)
     {
-        return in_array($source_name, $this->filtered_sources);
+        return in_array($source->getName(), $this->filtered_sources);
     }
     
     /**
-     * @param string $source_name
+     * @param SourceInterface $source
      * @return bool
      */
-    protected function sourceJoined($source_name)
+    protected function isJoinedSource(SourceInterface $source)
     {
-        return in_array($source_name, $this->joined_sources);
+        return in_array($source->getName(), $this->joined_sources);
     }
     
     /**
@@ -208,22 +216,40 @@ class Manager
      */
     private function applyJoin(Join $join)
     {
-        if ($join->hasJoiner() && $join->getJoiner() !== $this->sourceBag->getSource() && ! $this->sourceJoined($join->getJoiner()->getName())) {
-            $joinerJoin = $this->sourceBag->getJoinBySourceName($join->getJoiner()->getName());
-            if (! is_null($joinerJoin)) {
-                $this->applyJoin($joinerJoin);
+        if (! $this->isJoinedSource($join->getSource())) {
+            
+            if ($join->hasJoiner() && $join->getJoiner() !== $this->sourceBag->getSource() && ! $this->isJoinedSource($join->getJoiner())) {
+                $joinerJoin = $this->sourceBag->getJoinBySourceName($join->getJoiner()->getName());
+                if (! is_null($joinerJoin)) {
+                    $this->applyJoin($joinerJoin);
+                }
+            }
+            
+            $this->builder->join(
+                $this->sourceBag->getSource()->getAlias(),
+                $join->getSource()->getName(),
+                $join->getCondition(),
+                $join->getSource()->getAlias(),
+                $join->getType()
+            );
+            
+            $this->applyGroupBy($join->getSource());
+            
+            $this->joined_sources[] = $join->getSource()->getName();
+        }
+    }
+    
+    /**
+     * @param SourceInterface $source
+     */
+    private function applyGroupBy(SourceInterface $source)
+    {
+        // TODO: тут проверять, если есть агрегаты, то группировать по основному сорсу
+        if ($source->hasGroupByFields()) {
+            foreach ($source->getGroupByFields(true) as $field) {
+                $this->builder->addGroupBy($field);
             }
         }
-        
-        $this->builder->join(
-            $this->sourceBag->getSource()->getAlias(),
-            $join->getSource()->getName(),
-            $join->getCondition(),
-            $join->getSource()->getAlias(),
-            $join->getType()
-        );
-        
-        $this->joined_sources[] = $join->getSource()->getName();
     }
     
     /**
@@ -249,7 +275,7 @@ class Manager
         
         // джойним сначала сорсы тока по фильтрам для каунта
         foreach ($this->sourceBag->getJoins() as $join) {
-            if ($this->sourceFiltered($join->getSource()->getName())) {
+            if ($this->isFilteredSource($join->getSource())) {
                 $this->applyJoin($join);
             }
         }
@@ -262,14 +288,15 @@ class Manager
         
         // потом джойним все остальные
         foreach ($this->sourceBag->getJoins() as $join) {
-            if (! $this->sourceJoined($join->getSource()->getName())) {
+            if (! $this->isJoinedSource($join->getSource())) {
                 $this->applyJoin($join);
             }
         }
         
-        if ($this->sourceBag->hasGroupBy()) {
+        $this->applyGroupBy($this->sourceBag->getSource());
+        /*if ($this->sourceBag->hasGroupBy()) {
             $this->builder->groupBy($this->sourceBag->getGroupBy());
-        }
+        }*/
         
         $out['data'] = [];
         

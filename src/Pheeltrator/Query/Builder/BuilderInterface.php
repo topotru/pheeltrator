@@ -45,6 +45,14 @@ interface BuilderInterface
     public function andWhere($cond, $bindParams = null, $bindTypes = null);
     
     /**
+     * @param string $cond
+     * @param array $bindParams
+     * @param array $bindTypes
+     * @return mixed
+     */
+    public function andHaving($cond, $bindParams = null, $bindTypes = null);
+    
+    /**
      * @param array $binds
      * @return mixed
      */
@@ -75,5 +83,11 @@ interface BuilderInterface
      * @return BuilderInterface
      */
     public function groupBy($groupBy);
+    
+    /**
+     * @param string $groupBy
+     * @return BuilderInterface
+     */
+    public function addGroupBy($groupBy);
     
 }

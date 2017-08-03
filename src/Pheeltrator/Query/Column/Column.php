@@ -125,4 +125,14 @@ class Column extends AbstractColumn
         return $this;
     }
     
+    /**
+     * @param string $aggregate_expr
+     * @return Column
+     */
+    public function setAggregateExpr($aggregate_expr)
+    {
+        $this->aggregate_expr = $aggregate_expr;
+        return $this;
+    }
+    
 }

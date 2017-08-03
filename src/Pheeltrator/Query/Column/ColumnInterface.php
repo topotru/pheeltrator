@@ -132,6 +132,16 @@ interface ColumnInterface
     public function getAggregate();
     
     /**
+     * @return string
+     */
+    public function getAggregateExpr();
+    
+    /**
+     * @return string
+     */
+    public function getFullAggregateExpr();
+    
+    /**
      * @return bool
      */
     public function hasAggregate();

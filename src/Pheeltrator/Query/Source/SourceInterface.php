@@ -48,4 +48,15 @@ interface SourceInterface
      */
     public function hasWheres();
     
+    /**
+     * @param bool $aliased
+     * @return array
+     */
+    public function getGroupByFields($aliased = false);
+    
+    /**
+     * @return bool
+     */
+    public function hasGroupByFields();
+    
 }
