@@ -43,6 +43,7 @@ class Join
      * Join constructor.
      * @param SourceInterface $source
      * @param string $condition
+     * @param SourceInterface $joiner
      * @param string $type
      */
     public function __construct(SourceInterface $source, $condition, SourceInterface $joiner = null, $type = self::LEFT)

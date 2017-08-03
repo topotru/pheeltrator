@@ -28,6 +28,7 @@ interface BuilderInterface
     public function from($from, $alias = null);
     
     /**
+     * @param string $from
      * @param string $source
      * @param string $conditions
      * @param string $alias

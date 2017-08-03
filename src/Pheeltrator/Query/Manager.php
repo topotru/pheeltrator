@@ -133,7 +133,7 @@ class Manager
                 return (int)$item;
             }, $values);
         }
-    
+        
         // TODO: придумать чтото с этим  && $values[0] !== 0
         if (! $values[0] && $values[0] !== 0) {
             $values[0] = $column->isDate() ? date('j.m.Y') : $values[1];
@@ -141,7 +141,7 @@ class Manager
         if (! $values[1] && $values[1] !== 0) {
             $values[1] = $column->isDate() ? date('j.m.Y') : $values[0];
         }
-    
+        
         // TODO: добавить hasAggregate во все add* методы
         if ($column->hasAggregate()) {
             $this->builder->andHaving("( {$column->getFullAggregateExpr()} BETWEEN :{$key}_1 AND :{$key}_2 )", [

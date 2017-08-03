@@ -73,6 +73,7 @@ class SourceBag
         if ($source->getSelectFields() == Source::SELECT_ALL) {
             $out[] = $source->aliased('*');
         } else {
+            /** @var ColumnInterface $column */
             foreach ($this->getSourceColumns($source) as $column) {
                 $fields = [];
                 foreach ($column->getFields() as $field) {
@@ -110,6 +111,7 @@ class SourceBag
      */
     public function sourceHasAggregates(SourceInterface $source)
     {
+        /** @var ColumnInterface $column */
         foreach ($this->getSourceColumns($source) as $column) {
             if ($column->hasAggregate()) {
                 return true;

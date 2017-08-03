@@ -50,7 +50,7 @@ class Yadcf extends Parser
                 } else {
                     $name = $column[self::KEY_DATA];
                 }*/
-    
+                
                 $name = $column[self::KEY_DATA];
                 
                 $this->fields[$i] = $name;

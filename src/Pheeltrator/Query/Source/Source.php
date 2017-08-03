@@ -45,6 +45,7 @@ class Source implements SourceInterface
     /**
      * Source constructor.
      * @param string $name
+     * @param array $group_by_fields
      * @param string $alias
      * @param int $select
      */
