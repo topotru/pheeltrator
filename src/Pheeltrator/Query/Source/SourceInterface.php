@@ -8,7 +8,10 @@
 
 namespace TopoTrue\Pheeltrator\Query\Source;
 
-
+/**
+ * Interface SourceInterface
+ * @package TopoTrue\Pheeltrator\Query\Source
+ */
 interface SourceInterface
 {
     /**

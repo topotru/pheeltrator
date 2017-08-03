@@ -127,6 +127,11 @@ interface ColumnInterface
     public function isDate();
     
     /**
+     * @return bool
+     */
+    public function isInt();
+    
+    /**
      * @return string
      */
     public function getAggregate();

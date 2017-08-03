@@ -8,6 +8,7 @@
 
 namespace TopoTrue\Pheeltrator\Query;
 
+use TopoTrue\Pheeltrator\Query\Column\ColumnCollection;
 use TopoTrue\Pheeltrator\Query\Column\ColumnCollectionInterface;
 use TopoTrue\Pheeltrator\Query\Column\ColumnInterface;
 use TopoTrue\Pheeltrator\Query\Source\Join;
@@ -34,11 +35,6 @@ class SourceBag
      * @var Join[]
      */
     protected $joins = [];
-    
-    /**
-     * @var string
-     */
-    protected $group_by;
     
     /**
      * SourceBag constructor.
@@ -77,22 +73,49 @@ class SourceBag
         if ($source->getSelectFields() == Source::SELECT_ALL) {
             $out[] = $source->aliased('*');
         } else {
-            foreach ($this->getColumns() as $column) {
-                if ($column->getSource() === $source) {
-                    $fields = [];
-                    foreach ($column->getFields() as $field) {
-                        $alias = $column->getAlias($field);
-                        if ($column->hasAggregate()) {
-                            $fields[] = "{$column->getFullAggregateExpr()} as {$alias}";
-                        } else {
-                            $fields[] = "{$column->getSource()->aliased($field)} as {$alias}";
-                        }
+            foreach ($this->getSourceColumns($source) as $column) {
+                $fields = [];
+                foreach ($column->getFields() as $field) {
+                    $alias = $column->getAlias($field);
+                    if ($column->hasAggregate()) {
+                        $fields[] = "{$column->getFullAggregateExpr()} as {$alias}";
+                    } else {
+                        $fields[] = "{$column->getSource()->aliased($field)} as {$alias}";
                     }
-                    $out[$column->getName()] = implode(',', $fields);
                 }
+                $out[$column->getName()] = implode(',', $fields);
             }
         }
         return $out;
+    }
+    
+    /**
+     * @param SourceInterface $source
+     * @return ColumnCollectionInterface
+     */
+    public function getSourceColumns(SourceInterface $source)
+    {
+        $columns = new ColumnCollection();
+        foreach ($this->getColumns() as $column) {
+            if ($column->getSource() === $source) {
+                $columns->addColumn($column);
+            }
+        }
+        return $columns;
+    }
+    
+    /**
+     * @param SourceInterface $source
+     * @return bool
+     */
+    public function sourceHasAggregates(SourceInterface $source)
+    {
+        foreach ($this->getSourceColumns($source) as $column) {
+            if ($column->hasAggregate()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -147,29 +170,4 @@ class SourceBag
         return isset($this->joins[$name]);
     }
     
-    /**
-     * @return string
-     */
-    public function getGroupBy()
-    {
-        return $this->group_by;
-    }
-    
-    /**
-     * @param string $group_by
-     * @return SourceBag
-     */
-    public function setGroupBy($group_by)
-    {
-        $this->group_by = $group_by;
-        return $this;
-    }
-    
-    /**
-     * @return bool
-     */
-    public function hasGroupBy()
-    {
-        return ! empty($this->getGroupBy());
-    }
 }

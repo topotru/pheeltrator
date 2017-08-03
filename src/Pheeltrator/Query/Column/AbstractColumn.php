@@ -16,8 +16,8 @@ use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
  */
 abstract class AbstractColumn implements ColumnInterface
 {
-    
     const TYPE_DATE = 'date';
+    const TYPE_INT  = 'int';
     
     /**
      * @var string
@@ -266,6 +266,14 @@ abstract class AbstractColumn implements ColumnInterface
     public function isDate()
     {
         return $this->type === self::TYPE_DATE;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function isInt()
+    {
+        return $this->type === self::TYPE_INT;
     }
     
     /**

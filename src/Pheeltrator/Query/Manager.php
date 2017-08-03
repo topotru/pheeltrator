@@ -60,6 +60,11 @@ class Manager
     protected $joined_sources = [];
     
     /**
+     * @var array
+     */
+    protected $group_by_applied_sources = [];
+    
+    /**
      * Manager constructor.
      * @param SourceBag $sourceBag
      * @param ParserInterface $parser
@@ -121,9 +126,23 @@ class Manager
         $values = $this->prepareValue($column);
         $col    = $column->forSearch();
         $key    = str_replace('.', '_', $col);
-        if (! $values[1]) {
+        
+        // TODO: это вынести в prepareValue с обработкой колбэков
+        if ($column->isInt()) {
+            $values = array_map(function ($item) {
+                return (int)$item;
+            }, $values);
+        }
+    
+        // TODO: придумать чтото с этим  && $values[0] !== 0
+        if (! $values[0] && $values[0] !== 0) {
+            $values[0] = $column->isDate() ? date('j.m.Y') : $values[1];
+        }
+        if (! $values[1] && $values[1] !== 0) {
             $values[1] = $column->isDate() ? date('j.m.Y') : $values[0];
         }
+    
+        // TODO: добавить hasAggregate во все add* методы
         if ($column->hasAggregate()) {
             $this->builder->andHaving("( {$column->getFullAggregateExpr()} BETWEEN :{$key}_1 AND :{$key}_2 )", [
                 ":{$key}_1" => $column->isDate() ? date('Y-m-d', strtotime($values[0])) : $values[0],
@@ -212,6 +231,15 @@ class Manager
     }
     
     /**
+     * @param SourceInterface $source
+     * @return bool
+     */
+    protected function isGroupByAppliedSource(SourceInterface $source)
+    {
+        return in_array($source->getName(), $this->group_by_applied_sources);
+    }
+    
+    /**
      * @param Join $join
      */
     private function applyJoin(Join $join)
@@ -244,10 +272,17 @@ class Manager
      */
     private function applyGroupBy(SourceInterface $source)
     {
-        // TODO: тут проверять, если есть агрегаты, то группировать по основному сорсу
-        if ($source->hasGroupByFields()) {
-            foreach ($source->getGroupByFields(true) as $field) {
-                $this->builder->addGroupBy($field);
+        if ($this->sourceBag->sourceHasAggregates($source)) {
+            if (! $this->isGroupByAppliedSource($this->sourceBag->getSource())) {
+                $this->applyGroupBy($this->sourceBag->getSource());
+                $this->group_by_applied_sources[] = $source->getName();
+            }
+        } else {
+            if ($source->hasGroupByFields() && ! $this->isGroupByAppliedSource($source)) {
+                foreach ($source->getGroupByFields(true) as $field) {
+                    $this->builder->addGroupBy($field);
+                }
+                $this->group_by_applied_sources[] = $source->getName();
             }
         }
     }
@@ -286,6 +321,8 @@ class Manager
             $out['filtered'] = $out['total'];
         }
         
+        //die();
+        
         // потом джойним все остальные
         foreach ($this->sourceBag->getJoins() as $join) {
             if (! $this->isJoinedSource($join->getSource())) {
@@ -294,9 +331,6 @@ class Manager
         }
         
         $this->applyGroupBy($this->sourceBag->getSource());
-        /*if ($this->sourceBag->hasGroupBy()) {
-            $this->builder->groupBy($this->sourceBag->getGroupBy());
-        }*/
         
         $out['data'] = [];
         
@@ -336,6 +370,9 @@ class Manager
                 $out['data'][$i][$column->getName()] = $column->value($val);
             }
         }
+        
+        /*print_r($out);
+        die();*/
         
         return $out;
         
