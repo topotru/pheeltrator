@@ -55,9 +55,10 @@ interface BuilderInterface
     
     /**
      * @param array $binds
+     * @param array $types
      * @return mixed
      */
-    public function execute(array $binds = []);
+    public function execute(array $binds = [], array $types = []);
     
     /**
      * @param string $field
