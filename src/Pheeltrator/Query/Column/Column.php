@@ -106,6 +106,26 @@ class Column extends AbstractColumn
     }
     
     /**
+     * @param int|string $min_value
+     * @return Column
+     */
+    public function setMinValue($min_value)
+    {
+        $this->min_value = $min_value;
+        return $this;
+    }
+    
+    /**
+     * @param int|string $max_value
+     * @return Column
+     */
+    public function setMaxValue($max_value)
+    {
+        $this->max_value = $max_value;
+        return $this;
+    }
+    
+    /**
      * @param callable $transform
      * @return Column
      */

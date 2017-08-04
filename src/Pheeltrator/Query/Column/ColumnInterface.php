@@ -155,4 +155,25 @@ interface ColumnInterface
      * @return bool
      */
     public function isMultiField();
+    
+    /**
+     * @return int|string
+     */
+    public function getMinValue();
+    
+    /**
+     * @return int|string
+     */
+    public function getMaxValue();
+    
+    /**
+     * @return bool
+     */
+    public function hasMinValue();
+    
+    /**
+     * @return bool
+     */
+    public function hasMaxValue();
+    
 }

@@ -16,9 +16,6 @@ use TopoTrue\Pheeltrator\Response\YadcfResult;
  */
 class Yadcf extends Parser
 {
-    
-    const DELIMITER = '-yadcf_delim-';
-    
     const KEY_COLUMNS   = 'columns';
     const KEY_SEARCH    = 'search';
     const KEY_DATA      = 'data';
@@ -28,6 +25,11 @@ class Yadcf extends Parser
     const KEY_DIRECTION = 'dir';
     const KEY_LENGTH    = 'length';
     const KEY_START     = 'start';
+    
+    const DELIMITERS = [
+        '-yadcf_delim-',
+        '|',
+    ];
     
     /**
      *
@@ -45,12 +47,6 @@ class Yadcf extends Parser
                     continue;
                 }
                 
-                /*if (false !== strpos($column[self::KEY_DATA], '.')) {
-                    $name = strstr($column[self::KEY_DATA], '.', true);
-                } else {
-                    $name = $column[self::KEY_DATA];
-                }*/
-                
                 $name = $column[self::KEY_DATA];
                 
                 $this->fields[$i] = $name;
@@ -59,15 +55,16 @@ class Yadcf extends Parser
                 
                 $val = trim($column[self::KEY_SEARCH][self::KEY_VALUE], " \t\n\r\0\x0B\/");
                 
-                if ($val !== "" && $val != self::DELIMITER) {
+                if ($val !== "" && ! in_array($val, self::DELIMITERS)) {
                     
-                    if (stripos($val, self::DELIMITER) !== false) {
-                        
-                        $values = explode(self::DELIMITER, $val);
-                        //
-                        $this->filters[$name] = $values;
-                        
-                    } else {
+                    foreach (self::DELIMITERS as $DELIMITER) {
+                        if (stripos($val, $DELIMITER) !== false) {
+                            $values               = explode($DELIMITER, $val);
+                            $this->filters[$name] = $values;
+                        }
+                    }
+                    
+                    if (! isset($this->filters[$name])) {
                         $this->filters[$name] = $val;
                     }
                 }

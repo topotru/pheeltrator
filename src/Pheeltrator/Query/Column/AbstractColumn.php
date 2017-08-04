@@ -81,6 +81,16 @@ abstract class AbstractColumn implements ColumnInterface
     protected $aggregate_expr;
     
     /**
+     * @var int|string
+     */
+    protected $min_value;
+    
+    /**
+     * @var int|string
+     */
+    protected $max_value;
+    
+    /**
      * @return string
      */
     public function getName()
@@ -200,6 +210,38 @@ abstract class AbstractColumn implements ColumnInterface
     {
         $func = $this->value;
         return is_callable($func) ? $func($value) : $value;
+    }
+    
+    /**
+     * @return int|string
+     */
+    public function getMinValue()
+    {
+        return $this->min_value;
+    }
+    
+    /**
+     * @return int|string
+     */
+    public function getMaxValue()
+    {
+        return $this->max_value;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasMinValue()
+    {
+        return isset($this->min_value);
+    }
+    
+    /**
+     * @return bool
+     */
+    public function hasMaxValue()
+    {
+        return isset($this->max_value);
     }
     
     /**

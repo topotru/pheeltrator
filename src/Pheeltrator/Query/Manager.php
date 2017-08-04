@@ -10,6 +10,8 @@ namespace TopoTrue\Pheeltrator\Query;
 
 
 use TopoTrue\Pheeltrator\Query\Builder\BuilderInterface;
+use TopoTrue\Pheeltrator\Query\Builder\Helper;
+use TopoTrue\Pheeltrator\Query\Column\Column;
 use TopoTrue\Pheeltrator\Query\Column\ColumnInterface;
 use TopoTrue\Pheeltrator\Query\Source\Join;
 use TopoTrue\Pheeltrator\Query\Source\SourceInterface;
@@ -28,11 +30,6 @@ class Manager
     const CONDITION_BETWEEN = 'between';
     const CONDITION_MASK    = 'mask';
     const CONDITION_IN      = 'in';
-    
-    /**
-     * @var bool
-     */
-    protected $has_filters = false;
     
     /**
      * @var ParserInterface
@@ -97,9 +94,9 @@ class Manager
                     case self::CONDITION_MASK:
                         $this->addMask($column);
                         break;
-                    /*case self::CONDITION_IN:
+                    case self::CONDITION_IN:
                         $this->addIn($column);
-                        break;*/
+                        break;
                     default:
                         break;
                 }
@@ -127,19 +124,12 @@ class Manager
         $col    = $column->forSearch();
         $key    = str_replace('.', '_', $col);
         
-        // TODO: это вынести в prepareValue с обработкой колбэков
-        if ($column->isInt()) {
-            $values = array_map(function ($item) {
-                return (int)$item;
-            }, $values);
+        if (strlen($values[0]) < 1) {
+            $values[0] = $this->getMinValue($column);
         }
         
-        // TODO: придумать чтото с этим  && $values[0] !== 0
-        if (! $values[0] && $values[0] !== 0) {
-            $values[0] = $column->isDate() ? date('j.m.Y') : $values[1];
-        }
-        if (! $values[1] && $values[1] !== 0) {
-            $values[1] = $column->isDate() ? date('j.m.Y') : $values[0];
+        if (strlen($values[1]) < 1) {
+            $values[1] = $this->getMaxValue($column);
         }
         
         // TODO: добавить hasAggregate во все add* методы
@@ -154,6 +144,59 @@ class Manager
                 ":{$key}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
             ]);
         }
+        $this->filtered_sources[] = $column->getSource()->getName();
+    }
+    
+    /**
+     * @param ColumnInterface $column
+     * @return int|string
+     */
+    protected function getMinValue(ColumnInterface $column)
+    {
+        if ($column->hasMinValue()) {
+            return $column->getMinValue();
+        }
+        switch ($column->getType()) {
+            case Column::TYPE_INT:
+                return 0;
+            case Column::TYPE_DATE:
+                return date('j.m.Y', 0);
+            default:
+                return '';
+        }
+    }
+    
+    /**
+     * @param ColumnInterface $column
+     * @return int|string
+     */
+    protected function getMaxValue(ColumnInterface $column)
+    {
+        if ($column->hasMaxValue()) {
+            return $column->getMaxValue();
+        }
+        switch ($column->getType()) {
+            case Column::TYPE_INT:
+                return 100000;
+            case Column::TYPE_DATE:
+                return date('j.m.Y');
+            default:
+                return '';
+        }
+    }
+    
+    /**
+     * @param ColumnInterface $column
+     */
+    protected function addIn(ColumnInterface $column)
+    {
+        $values = (array)$this->prepareValue($column);
+        $col    = $column->forSearch();
+        $key    = str_replace('.', '_', $col);
+        
+        $bind = Helper::makeMultipleBind($key, $values);
+        
+        $this->builder->andWhere("( {$col} IN ({$bind->getPlaceholdersString()}) )", $bind->getValues());
         $this->filtered_sources[] = $column->getSource()->getName();
     }
     
@@ -234,7 +277,7 @@ class Manager
      * @param SourceInterface $source
      * @return bool
      */
-    protected function isGroupByAppliedSource(SourceInterface $source)
+    protected function isSourceGroupByApplied(SourceInterface $source)
     {
         return in_array($source->getName(), $this->group_by_applied_sources);
     }
@@ -270,19 +313,28 @@ class Manager
     /**
      * @param SourceInterface $source
      */
-    private function applyGroupBy(SourceInterface $source)
+    private function attachGroupBy(SourceInterface $source)
     {
-        if ($this->sourceBag->sourceHasAggregates($source)) {
-            if (! $this->isGroupByAppliedSource($this->sourceBag->getSource())) {
-                $this->applyGroupBy($this->sourceBag->getSource());
-                $this->group_by_applied_sources[] = $source->getName();
+        if ($source->hasGroupByFields() && ! $this->isSourceGroupByApplied($source)) {
+            foreach ($source->getGroupByFields(true) as $field) {
+                $this->builder->addGroupBy($field);
+            }
+            $this->group_by_applied_sources[] = $source->getName();
+        }
+    }
+    
+    /**
+     * @param SourceInterface $source
+     */
+    private function applyGroupBy(SourceInterface $source = null)
+    {
+        if (! is_null($source)) {
+            if ($this->sourceBag->sourceHasAggregates($source)) {
+                $this->attachGroupBy($this->sourceBag->getSource());
             }
         } else {
-            if ($source->hasGroupByFields() && ! $this->isGroupByAppliedSource($source)) {
-                foreach ($source->getGroupByFields(true) as $field) {
-                    $this->builder->addGroupBy($field);
-                }
-                $this->group_by_applied_sources[] = $source->getName();
+            foreach ($this->sourceBag->getJoins() as $join) {
+                $this->attachGroupBy($join->getSource());
             }
         }
     }
@@ -302,20 +354,17 @@ class Manager
             }
         }
         
-        $columns = $this->sourceBag->getColumns();
-        
         $out['total'] = $this->builder->count();
         
         $this->applyExpressions();
         
-        // джойним сначала сорсы тока по фильтрам для каунта
-        foreach ($this->sourceBag->getJoins() as $join) {
-            if ($this->isFilteredSource($join->getSource())) {
-                $this->applyJoin($join);
-            }
-        }
-        
         if ($this->parser->hasFilters()) {
+            // джойним сначала сорсы тока по фильтрам для каунта
+            foreach ($this->sourceBag->getJoins() as $join) {
+                if ($this->isFilteredSource($join->getSource())) {
+                    $this->applyJoin($join);
+                }
+            }
             $out['filtered'] = $this->builder->count();
         } else {
             $out['filtered'] = $out['total'];
@@ -323,14 +372,12 @@ class Manager
         
         //die();
         
-        // потом джойним все остальные
+        // джойним все остальные сорсы
         foreach ($this->sourceBag->getJoins() as $join) {
-            if (! $this->isJoinedSource($join->getSource())) {
-                $this->applyJoin($join);
-            }
+            $this->applyJoin($join);
         }
         
-        $this->applyGroupBy($this->sourceBag->getSource());
+        $this->applyGroupBy();
         
         $out['data'] = [];
         
@@ -339,14 +386,14 @@ class Manager
         $this->builder->limit($this->parser->getLimit(), $this->parser->getOffset());
         
         foreach ($this->parser->getOrder() as $order) {
-            $column = $columns->getByName($order[0]);
+            $column = $this->sourceBag->getColumns()->getByName($order[0]);
             $this->builder->orderBy($column->getAlias($column->getSortField()), $order[1]);
         }
         
         $items = $this->builder->execute();
         
         foreach ($items as $i => $item) {
-            foreach ($columns as $column) {
+            foreach ($this->sourceBag->getColumns() as $column) {
                 $key = isset($item->{$column->getSource()->getAlias()}) ? $column->getSource()->getAlias() : $column->getName();
                 
                 if (is_array($item)) {
