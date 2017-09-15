@@ -69,14 +69,16 @@ class YadcfResult implements ResultInterface
             
             $index = $this->parser->getFieldIndex($fld);
             
-            if (false === $index) {
-                continue;
-            }
-            
-            $key = "yadcf_data_{$this->parser->getFieldIndex($fld)}";
-            
-            foreach ($items as $_k => $_v) {
-                $out[$key][] = ["value" => "{$_k}", "label" => "{$_v}"];
+            if (false !== $index) {
+                
+                $key = "yadcf_data_{$index}";
+                
+                foreach ($items as $_k => $_v) {
+                    $out[$key][] = ["value" => "{$_k}", "label" => "{$_v}"];
+                }
+                
+            } else {
+                $out[$fld] = $items;
             }
             
         }

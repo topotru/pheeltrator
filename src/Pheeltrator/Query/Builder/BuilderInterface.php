@@ -92,4 +92,19 @@ interface BuilderInterface
      */
     public function addGroupBy($groupBy);
     
+    /**
+     * @return string
+     */
+    public function getSQL();
+    
+    /**
+     * @return string
+     */
+    public function getQueryBasicPart();
+    
+    /**
+     * @return array
+     */
+    public function getParameters();
+    
 }

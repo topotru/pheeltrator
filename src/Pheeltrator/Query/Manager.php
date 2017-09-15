@@ -379,8 +379,6 @@ class Manager
         
         $this->applyGroupBy();
         
-        $out['data'] = [];
-        
         $this->builder->select($this->sourceBag->getSelect());
         
         $this->builder->limit($this->parser->getLimit(), $this->parser->getOffset());
@@ -391,6 +389,13 @@ class Manager
         }
         
         $items = $this->builder->execute();
+        
+        $out['_query_'] = [
+            'sql_part' => $this->builder->getQueryBasicPart(),
+            'values'   => $this->builder->getParameters(),
+        ];
+        
+        $out['data'] = [];
         
         foreach ($items as $i => $item) {
             foreach ($this->sourceBag->getColumns() as $column) {
@@ -417,9 +422,6 @@ class Manager
                 $out['data'][$i][$column->getName()] = $column->value($val);
             }
         }
-        
-        /*print_r($out);
-        die();*/
         
         return $out;
         
