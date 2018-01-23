@@ -22,7 +22,7 @@ interface BuilderInterface
     
     /**
      * @param string $from
-     * @param string $alias
+     * @param string|null $alias
      * @return BuilderInterface
      */
     public function from($from, $alias = null);
@@ -30,38 +30,38 @@ interface BuilderInterface
     /**
      * @param string $from
      * @param string $source
-     * @param string $conditions
-     * @param string $alias
-     * @param string $type
+     * @param string|null $conditions
+     * @param string|null $alias
+     * @param string|null $type
      * @return BuilderInterface
      */
     public function join($from, $source, $conditions = null, $alias = null, $type = null);
     
     /**
      * @param string $cond
-     * @param array $bindParams
-     * @param array $bindTypes
-     * @return mixed
+     * @param array|null $bindParams
+     * @param array|null $bindTypes
+     * @return BuilderInterface
      */
     public function andWhere($cond, $bindParams = null, $bindTypes = null);
     
     /**
      * @param string $cond
-     * @param array $bindParams
-     * @param array $bindTypes
-     * @return mixed
+     * @param array|null $bindParams
+     * @param array|null $bindTypes
+     * @return BuilderInterface
      */
     public function andHaving($cond, $bindParams = null, $bindTypes = null);
     
     /**
-     * @param array $binds
-     * @param array $types
+     * @param array|null $binds
+     * @param array|null $types
      * @return mixed
      */
     public function execute(array $binds = [], array $types = []);
     
     /**
-     * @param string $field
+     * @param string|null $field
      * @return int
      */
     public function count($field = '*');
