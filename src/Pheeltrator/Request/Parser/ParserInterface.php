@@ -17,6 +17,12 @@ use TopoTrue\Pheeltrator\Response\ResultInterface;
 interface ParserInterface
 {
     /**
+     * @param mixed $data
+     * @return ParserInterface
+     */
+    public function setData(iterable $data);
+    
+    /**
      * @return bool
      */
     public function hasFilters();

@@ -51,8 +51,21 @@ abstract class Parser implements ParserInterface
      */
     public function __construct(array $data = [])
     {
-        $this->data = $data;
+        $this->setData($data);
+    }
+    
+    /**
+     * @param iterable $data
+     * @return ParserInterface
+     */
+    public function setData(iterable $data)
+    {
+        //$this->data = $data;
+        foreach ($data as $key => $value) {
+            $this->data[$key] = $value;
+        }
         $this->parse();
+        return $this;
     }
     
     /**
