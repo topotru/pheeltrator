@@ -55,24 +55,40 @@ abstract class Parser implements ParserInterface
     }
     
     /**
+     * Parse data and fill variables
+     * @return void
+     */
+    abstract protected function parse();
+    
+    /**
+     *
+     */
+    private function reset()
+    {
+        $this->limit   = 0;
+        $this->offset  = 0;
+        $this->filters = [];
+        $this->fields  = [];
+        $this->order   = [];
+        $this->data    = [];
+    }
+    
+    /**
      * @param iterable $data
      * @return ParserInterface
      */
     public function setData(iterable $data)
     {
+        $this->reset();
         //$this->data = $data;
         foreach ($data as $key => $value) {
             $this->data[$key] = $value;
         }
-        $this->parse();
+        if ($this->data) {
+            $this->parse();
+        }
         return $this;
     }
-    
-    /**
-     * Parse data and fill variables
-     * @return void
-     */
-    abstract protected function parse();
     
     /**
      * @param string $key
