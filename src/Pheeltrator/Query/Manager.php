@@ -239,10 +239,18 @@ class Manager
     protected function addMask(ColumnInterface $column)
     {
         $value = $this->prepareValue($column);
-        $col   = $column->forSearch();
-        $key   = str_replace('.', '_', $col);
+        if (is_array($value)) {
+            $val = 0;
+            foreach ($value as $item) {
+                $val |= 1 << ($item - 1);
+            }
+        } else {
+            $val = 0 | 1 << ($value - 1);
+        }
+        $col = $column->forSearch();
+        $key = str_replace('.', '_', $col);
         $this->builder->andWhere("( {$col} & :{$key}_1 )", [
-            ":{$key}_1" => 0 | 1 << ($value - 1),
+            ":{$key}_1" => $val,
         ]);
         $this->filtered_sources[] = $column->getSource()->getName();
     }
