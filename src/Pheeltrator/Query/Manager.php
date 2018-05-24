@@ -24,12 +24,12 @@ use TopoTrue\Pheeltrator\Request\Parser\ParserInterface;
  */
 class Manager
 {
-    
-    const CONDITION_LIKE    = 'like';
-    const CONDITION_EQUAL   = 'equal';
-    const CONDITION_BETWEEN = 'between';
-    const CONDITION_MASK    = 'mask';
-    const CONDITION_IN      = 'in';
+    const CONDITION_LIKE     = 'like';
+    const CONDITION_EQUAL    = 'equal';
+    const CONDITION_BETWEEN  = 'between';
+    const CONDITION_MASK_OR  = 'mask_or'; // partial (or) comparision
+    const CONDITION_MASK_AND = 'mask_and'; // full (and) comparision
+    const CONDITION_IN       = 'in';
     
     /**
      * @var ParserInterface
@@ -91,8 +91,11 @@ class Manager
                     case self::CONDITION_LIKE:
                         $this->addLike($column);
                         break;
-                    case self::CONDITION_MASK:
-                        $this->addMask($column);
+                    case self::CONDITION_MASK_OR:
+                        $this->addMask($column, false);
+                        break;
+                    case self::CONDITION_MASK_AND:
+                        $this->addMask($column, true);
                         break;
                     case self::CONDITION_IN:
                         $this->addIn($column);
@@ -235,8 +238,9 @@ class Manager
     
     /**
      * @param ColumnInterface $column
+     * @param bool $and_comparision
      */
-    protected function addMask(ColumnInterface $column)
+    protected function addMask(ColumnInterface $column, bool $and_comparision)
     {
         $value = $this->prepareValue($column);
         if (is_array($value)) {
@@ -249,10 +253,19 @@ class Manager
         }
         $col = $column->forSearch();
         $key = str_replace('.', '_', $col);
-        $this->builder->andWhere("( {$col} & :{$key}_1 ) = :{$key}_2", [
-            ":{$key}_1" => $val,
-            ":{$key}_2" => $val,
-        ]);
+        if ($and_comparision) {
+            $condition = "({$col} & :{$key}_1) = :{$key}_2";
+            $binds     = [
+                ":{$key}_1" => $val,
+                ":{$key}_2" => $val,
+            ];
+        } else {
+            $condition = "{$col} & :{$key}_1";
+            $binds     = [
+                ":{$key}_1" => $val,
+            ];
+        }
+        $this->builder->andWhere("({$condition})", $binds);
         $this->filtered_sources[] = $column->getSource()->getName();
     }
     
