@@ -249,8 +249,9 @@ class Manager
         }
         $col = $column->forSearch();
         $key = str_replace('.', '_', $col);
-        $this->builder->andWhere("( {$col} & :{$key}_1 ) = :{$key}_1", [
+        $this->builder->andWhere("( {$col} & :{$key}_1 ) = :{$key}_2", [
             ":{$key}_1" => $val,
+            ":{$key}_2" => $val,
         ]);
         $this->filtered_sources[] = $column->getSource()->getName();
     }
