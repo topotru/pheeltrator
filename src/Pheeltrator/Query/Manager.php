@@ -147,7 +147,7 @@ class Manager
                 ":{$key}_2" => $column->isDate() ? date('Y-m-d', strtotime($values[1]))." 23:59:59" : $values[1],
             ]);
         }
-        $this->filtered_sources[] = $column->getSource()->getName();
+        $this->filtered_sources[] = $column->getSource()->getAlias();
     }
     
     /**
@@ -200,7 +200,7 @@ class Manager
         $bind = Helper::makeMultipleBind($key, $values);
         
         $this->builder->andWhere("( {$col} IN ({$bind->getPlaceholdersString()}) )", $bind->getValues());
-        $this->filtered_sources[] = $column->getSource()->getName();
+        $this->filtered_sources[] = $column->getSource()->getAlias();
     }
     
     /**
@@ -218,7 +218,7 @@ class Manager
                 ":{$key}_3" => "%{$value}",
                 ":{$key}_4" => "{$value}",
             ]);
-            $this->filtered_sources[] = $column->getSource()->getName();
+            $this->filtered_sources[] = $column->getSource()->getAlias();
         }
     }
     
@@ -233,7 +233,7 @@ class Manager
         $this->builder->andWhere("( {$col} = :{$key}_1 )", [
             ":{$key}_1" => $value,
         ]);
-        $this->filtered_sources[] = $column->getSource()->getName();
+        $this->filtered_sources[] = $column->getSource()->getAlias();
     }
     
     /**
@@ -266,7 +266,7 @@ class Manager
             ];
         }
         $this->builder->andWhere("({$condition})", $binds);
-        $this->filtered_sources[] = $column->getSource()->getName();
+        $this->filtered_sources[] = $column->getSource()->getAlias();
     }
     
     /**
@@ -283,7 +283,7 @@ class Manager
      */
     protected function isFilteredSource($source)
     {
-        return in_array($source->getName(), $this->filtered_sources);
+        return in_array($source->getAlias(), $this->filtered_sources);
     }
     
     /**
@@ -292,7 +292,7 @@ class Manager
      */
     protected function isJoinedSource(SourceInterface $source)
     {
-        return in_array($source->getName(), $this->joined_sources);
+        return in_array($source->getAlias(), $this->joined_sources);
     }
     
     /**
@@ -301,7 +301,7 @@ class Manager
      */
     protected function isSourceGroupByApplied(SourceInterface $source)
     {
-        return in_array($source->getName(), $this->group_by_applied_sources);
+        return in_array($source->getAlias(), $this->group_by_applied_sources);
     }
     
     /**
@@ -312,7 +312,7 @@ class Manager
         if (! $this->isJoinedSource($join->getSource())) {
             
             if ($join->hasJoiner() && $join->getJoiner() !== $this->sourceBag->getSource() && ! $this->isJoinedSource($join->getJoiner())) {
-                $joinerJoin = $this->sourceBag->getJoinBySourceName($join->getJoiner()->getName());
+                $joinerJoin = $this->sourceBag->getJoinBySourceName($join->getJoiner()->getAlias());
                 if (! is_null($joinerJoin)) {
                     $this->applyJoin($joinerJoin);
                 }
@@ -327,8 +327,8 @@ class Manager
             );
             
             $this->applyGroupBy($join->getSource());
-            
-            $this->joined_sources[] = $join->getSource()->getName();
+    
+            $this->joined_sources[] = $join->getSource()->getAlias();
         }
     }
     
@@ -341,7 +341,7 @@ class Manager
             foreach ($source->getGroupByFields(true) as $field) {
                 $this->builder->addGroupBy($field);
             }
-            $this->group_by_applied_sources[] = $source->getName();
+            $this->group_by_applied_sources[] = $source->getAlias();
         }
     }
     
@@ -391,8 +391,6 @@ class Manager
         } else {
             $out['filtered'] = $out['total'];
         }
-        
-        //die();
         
         // джойним все остальные сорсы
         foreach ($this->sourceBag->getJoins() as $join) {

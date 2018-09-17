@@ -126,7 +126,7 @@ class SourceBag
      */
     public function join(Join $join)
     {
-        $this->joins[$join->getSource()->getName()] = $join;
+        $this->joins[$join->getSource()->getAlias()] = $join;
         return $this;
     }
     
