@@ -49,7 +49,7 @@ class Source implements SourceInterface
      * @param string $alias
      * @param int $select
      */
-    public function __construct($name, array $group_by_fields = [], $alias = null, $select = self::SELECT_COLUMNS)
+    public function __construct(string $name, array $group_by_fields = [], string $alias = null, int $select = self::SELECT_COLUMNS)
     {
         $this->name   = $name;
         $this->alias  = ! is_null($alias) ? $alias : strtolower(preg_replace('/[^a-z0-9_]/i', '_', $this->name));

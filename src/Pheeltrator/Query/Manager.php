@@ -325,6 +325,12 @@ class Manager
                 $join->getSource()->getAlias(),
                 $join->getType()
             );
+    
+            if ($join->getSource()->hasWheres()) {
+                foreach ($join->getSource()->getWheres() as $where) {
+                    $this->builder->andWhere($join->getSource()->aliased($where));
+                }
+            }
             
             $this->applyGroupBy($join->getSource());
     
@@ -373,6 +379,12 @@ class Manager
         if ($this->sourceBag->getSource()->hasWheres()) {
             foreach ($this->sourceBag->getSource()->getWheres() as $where) {
                 $this->builder->andWhere($this->sourceBag->getSource()->aliased($where));
+            }
+        }
+    
+        foreach ($this->sourceBag->getJoins() as $join) {
+            if ($join->getSource()->hasWheres()) {
+                $this->applyJoin($join);
             }
         }
         
