@@ -24,7 +24,7 @@ class Column extends AbstractColumn
     {
         $this->name = $name;
     }
-    
+
     /**
      * @param string $field
      * @return Column
@@ -34,7 +34,7 @@ class Column extends AbstractColumn
         $this->fields[] = $field;
         return $this;
     }
-    
+
     /**
      * @param array $fields
      * @return Column
@@ -44,7 +44,7 @@ class Column extends AbstractColumn
         $this->fields = $fields;
         return $this;
     }
-    
+
     /**
      * @param string $search_field
      * @return Column
@@ -54,7 +54,7 @@ class Column extends AbstractColumn
         $this->search_field = $search_field;
         return $this;
     }
-    
+
     /**
      * @param string $sort_field
      * @return Column
@@ -64,7 +64,7 @@ class Column extends AbstractColumn
         $this->sort_field = $sort_field;
         return $this;
     }
-    
+
     /**
      * @param string $type
      * @return Column
@@ -74,7 +74,7 @@ class Column extends AbstractColumn
         $this->type = $type;
         return $this;
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return Column
@@ -84,7 +84,7 @@ class Column extends AbstractColumn
         $this->source = $source;
         return $this;
     }
-    
+
     /**
      * @param string $expression
      * @return Column
@@ -94,7 +94,7 @@ class Column extends AbstractColumn
         $this->expression = $expression;
         return $this;
     }
-    
+
     /**
      * @param callable $value
      * @return Column
@@ -104,7 +104,7 @@ class Column extends AbstractColumn
         $this->value = $value;
         return $this;
     }
-    
+
     /**
      * @param int|string $min_value
      * @return Column
@@ -114,7 +114,7 @@ class Column extends AbstractColumn
         $this->min_value = $min_value;
         return $this;
     }
-    
+
     /**
      * @param int|string $max_value
      * @return Column
@@ -124,7 +124,7 @@ class Column extends AbstractColumn
         $this->max_value = $max_value;
         return $this;
     }
-    
+
     /**
      * @param callable $transform
      * @return Column
@@ -134,7 +134,7 @@ class Column extends AbstractColumn
         $this->transform = $transform;
         return $this;
     }
-    
+
     /**
      * @param $aggregate
      * @return Column
@@ -144,7 +144,7 @@ class Column extends AbstractColumn
         $this->aggregate = $aggregate;
         return $this;
     }
-    
+
     /**
      * @param string $aggregate_expr
      * @return Column
@@ -154,5 +154,15 @@ class Column extends AbstractColumn
         $this->aggregate_expr = $aggregate_expr;
         return $this;
     }
-    
+
+    /**
+     * @param string $func
+     * @return $this
+     */
+    public function setFunc(string $func)
+    {
+        $this->func = $func;
+        return $this;
+    }
+
 }

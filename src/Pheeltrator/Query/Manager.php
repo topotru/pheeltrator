@@ -30,37 +30,37 @@ class Manager
     const CONDITION_MASK_OR  = 'mask_or'; // partial (or) comparision
     const CONDITION_MASK_AND = 'mask_and'; // full (and) comparision
     const CONDITION_IN       = 'in';
-    
+
     /**
      * @var ParserInterface
      */
     protected $parser;
-    
+
     /**
      * @var BuilderInterface
      */
     protected $builder;
-    
+
     /**
      * @var SourceBag
      */
     protected $sourceBag;
-    
+
     /**
      * @var array
      */
     protected $filtered_sources = [];
-    
+
     /**
      * @var array
      */
     protected $joined_sources = [];
-    
+
     /**
      * @var array
      */
     protected $group_by_applied_sources = [];
-    
+
     /**
      * Manager constructor.
      * @param SourceBag $sourceBag
@@ -73,7 +73,7 @@ class Manager
         $this->builder   = $builder;
         $this->sourceBag = $sourceBag;
     }
-    
+
     /**
      *
      */
@@ -106,7 +106,7 @@ class Manager
             }
         }
     }
-    
+
     /**
      * @param ColumnInterface $column
      * @return mixed|null
@@ -117,7 +117,7 @@ class Manager
             ? $column->transform($this->parser->getFilter($column->getName()))
             : $this->parser->getFilter($column->getName());
     }
-    
+
     /**
      * @param ColumnInterface $column
      */
@@ -125,16 +125,16 @@ class Manager
     {
         $values = $this->prepareValue($column);
         $col    = $column->forSearch();
-        $key    = str_replace('.', '_', $col);
-        
+        $key    = str_replace('.', '_', $column->hasFunc() ? $column->getSource()->aliased($column->getAlias()) : $col);
+
         if (strlen($values[0]) < 1) {
             $values[0] = $this->getMinValue($column);
         }
-        
+
         if (strlen($values[1]) < 1) {
             $values[1] = $this->getMaxValue($column);
         }
-        
+
         // TODO: добавить hasAggregate во все add* методы
         if ($column->hasAggregate()) {
             $this->builder->andHaving("( {$column->getFullAggregateExpr()} BETWEEN :{$key}_1 AND :{$key}_2 )", [
@@ -149,7 +149,7 @@ class Manager
         }
         $this->filtered_sources[] = $column->getSource()->getAlias();
     }
-    
+
     /**
      * @param ColumnInterface $column
      * @return int|string
@@ -168,7 +168,7 @@ class Manager
                 return '';
         }
     }
-    
+
     /**
      * @param ColumnInterface $column
      * @return int|string
@@ -187,7 +187,7 @@ class Manager
                 return '';
         }
     }
-    
+
     /**
      * @param ColumnInterface $column
      */
@@ -195,14 +195,14 @@ class Manager
     {
         $values = (array)$this->prepareValue($column);
         $col    = $column->forSearch();
-        $key    = str_replace('.', '_', $col);
-        
+        $key    = str_replace('.', '_', $column->hasFunc() ? $column->getSource()->aliased($column->getAlias()) : $col);
+
         $bind = Helper::makeMultipleBind($key, $values);
-        
+
         $this->builder->andWhere("( {$col} IN ({$bind->getPlaceholdersString()}) )", $bind->getValues());
         $this->filtered_sources[] = $column->getSource()->getAlias();
     }
-    
+
     /**
      * @param ColumnInterface $column
      */
@@ -211,7 +211,7 @@ class Manager
         $value = $this->prepareValue($column);
         if ((string)$value) {
             $col = $column->forSearch();
-            $key = str_replace('.', '_', $col);
+            $key = str_replace('.', '_', $column->hasFunc() ? $column->getSource()->aliased($column->getAlias()) : $col);
             $this->builder->andWhere("( LOWER({$col}) LIKE LOWER(:{$key}_1) OR LOWER({$col}) LIKE LOWER(:{$key}_2) OR LOWER({$col}) LIKE LOWER(:{$key}_3) OR LOWER({$col}) LIKE (:{$key}_4) )", [
                 ":{$key}_1" => "{$value}%",
                 ":{$key}_2" => "%{$value}%",
@@ -221,7 +221,7 @@ class Manager
             $this->filtered_sources[] = $column->getSource()->getAlias();
         }
     }
-    
+
     /**
      * @param ColumnInterface $column
      */
@@ -229,13 +229,13 @@ class Manager
     {
         $value = $this->prepareValue($column);
         $col   = $column->forSearch();
-        $key   = str_replace('.', '_', $col);
+        $key   = str_replace('.', '_', $column->hasFunc() ? $column->getSource()->aliased($column->getAlias()) : $col);
         $this->builder->andWhere("( {$col} = :{$key}_1 )", [
             ":{$key}_1" => $value,
         ]);
         $this->filtered_sources[] = $column->getSource()->getAlias();
     }
-    
+
     /**
      * @param ColumnInterface $column
      * @param bool $and_comparision
@@ -252,7 +252,7 @@ class Manager
             $val = 0 | 1 << ($value - 1);
         }
         $col = $column->forSearch();
-        $key = str_replace('.', '_', $col);
+        $key = str_replace('.', '_', $column->hasFunc() ? $column->getSource()->aliased($column->getAlias()) : $col);
         if ($and_comparision) {
             $condition = "({$col} & :{$key}_1) = :{$key}_2";
             $binds     = [
@@ -268,7 +268,7 @@ class Manager
         $this->builder->andWhere("({$condition})", $binds);
         $this->filtered_sources[] = $column->getSource()->getAlias();
     }
-    
+
     /**
      * @return bool
      */
@@ -276,7 +276,7 @@ class Manager
     {
         return ! empty($this->filtered_sources);
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return bool
@@ -285,7 +285,7 @@ class Manager
     {
         return in_array($source->getAlias(), $this->filtered_sources);
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return bool
@@ -294,7 +294,7 @@ class Manager
     {
         return in_array($source->getAlias(), $this->joined_sources);
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return bool
@@ -303,21 +303,21 @@ class Manager
     {
         return in_array($source->getAlias(), $this->group_by_applied_sources);
     }
-    
+
     /**
      * @param Join $join
      */
     private function applyJoin(Join $join)
     {
         if (! $this->isJoinedSource($join->getSource())) {
-            
+
             if ($join->hasJoiner() && $join->getJoiner() !== $this->sourceBag->getSource() && ! $this->isJoinedSource($join->getJoiner())) {
                 $joinerJoin = $this->sourceBag->getJoinBySourceName($join->getJoiner()->getAlias());
                 if (! is_null($joinerJoin)) {
                     $this->applyJoin($joinerJoin);
                 }
             }
-            
+
             $this->builder->join(
                 $this->sourceBag->getSource()->getAlias(),
                 $join->getSource()->getName(),
@@ -325,19 +325,19 @@ class Manager
                 $join->getSource()->getAlias(),
                 $join->getType()
             );
-    
+
             if ($join->getSource()->hasWheres()) {
                 foreach ($join->getSource()->getWheres() as $where) {
                     $this->builder->andWhere($join->getSource()->aliased($where));
                 }
             }
-            
+
             $this->applyGroupBy($join->getSource());
-    
+
             $this->joined_sources[] = $join->getSource()->getAlias();
         }
     }
-    
+
     /**
      * @param SourceInterface $source
      */
@@ -350,7 +350,7 @@ class Manager
             $this->group_by_applied_sources[] = $source->getAlias();
         }
     }
-    
+
     /**
      * @param SourceInterface $source
      */
@@ -366,32 +366,32 @@ class Manager
             }
         }
     }
-    
+
     /**
      * @return array
      */
     public function execute()
     {
         $out = [];
-        
+
         $this->builder->from($this->sourceBag->getSource()->getName(), $this->sourceBag->getSource()->getAlias());
-        
+
         if ($this->sourceBag->getSource()->hasWheres()) {
             foreach ($this->sourceBag->getSource()->getWheres() as $where) {
                 $this->builder->andWhere($this->sourceBag->getSource()->aliased($where));
             }
         }
-    
+
         foreach ($this->sourceBag->getJoins() as $join) {
             if ($join->getSource()->hasWheres()) {
                 $this->applyJoin($join);
             }
         }
-        
+
         $out['total'] = $this->builder->count();
-        
+
         $this->applyExpressions();
-        
+
         if ($this->parser->hasFilters()) {
             // джойним сначала сорсы тока по фильтрам для каунта
             foreach ($this->sourceBag->getJoins() as $join) {
@@ -403,60 +403,60 @@ class Manager
         } else {
             $out['filtered'] = $out['total'];
         }
-        
+
         // джойним все остальные сорсы
         foreach ($this->sourceBag->getJoins() as $join) {
             $this->applyJoin($join);
         }
-        
+
         $this->applyGroupBy();
-        
+
         $this->builder->select($this->sourceBag->getSelect());
-        
+
         $this->builder->limit($this->parser->getLimit(), $this->parser->getOffset());
-        
+
         foreach ($this->parser->getOrder() as $order) {
             $column = $this->sourceBag->getColumns()->getByName($order[0]);
             $this->builder->orderBy($column->getAlias($column->getSortField()), $order[1]);
         }
-        
+
         $items = $this->builder->execute();
-        
+
         $out['_query_'] = [
             'sql_part' => $this->builder->getQueryBasicPart(),
             'values'   => $this->builder->getParameters(),
         ];
-        
+
         $out['data'] = [];
-        
+
         foreach ($items as $i => $item) {
             foreach ($this->sourceBag->getColumns() as $column) {
                 $key = isset($item->{$column->getSource()->getAlias()}) ? $column->getSource()->getAlias() : $column->getName();
-                
+
                 if (is_array($item)) {
-                    
+
                     if ($column->isMultiField()) {
-                        
+
                         $val = [];
                         foreach ($column->getFields() as $field) {
                             $_key        = $column->getAlias($field);
                             $val[$field] = $item[$_key];
                         }
-                        
+
                     } else {
                         $val = $item[$key];
                     }
-                    
+
                 } else {
                     $val = $item->{$key};
                 }
-                
+
                 $out['data'][$i][$column->getName()] = $column->value($val);
             }
         }
-        
+
         return $out;
-        
+
     }
-    
+
 }

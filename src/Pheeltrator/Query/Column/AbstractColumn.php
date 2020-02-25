@@ -18,78 +18,83 @@ abstract class AbstractColumn implements ColumnInterface
 {
     const TYPE_DATE = 'date';
     const TYPE_INT  = 'int';
-    
+
     /**
      * @var string
      */
     protected $name;
-    
+
     /**
      * @var array
      */
     protected $fields = [];
-    
+
     /**
      * @var string
      */
     protected $search_field;
-    
+
     /**
      * @var string
      */
     protected $sort_field;
-    
+
     /**
      * @var string
      */
     protected $type;
-    
+
     /**
      * @var SourceInterface
      */
     protected $source;
-    
+
     /**
      * @var string
      */
     protected $alias;
-    
+
     /**
      * @var string
      */
     protected $expression;
-    
+
     /**
      * @var callable
      */
     protected $value;
-    
+
     /**
      * Transform before query
      * @var callable
      */
     protected $transform;
-    
+
     /**
      * @var string
      */
     protected $aggregate;
-    
+
     /**
      * @var string
      */
     protected $aggregate_expr;
-    
+
     /**
      * @var int|string
      */
     protected $min_value;
-    
+
     /**
      * @var int|string
      */
     protected $max_value;
-    
+
+    /**
+     * @var string
+     */
+    protected $func;
+
     /**
      * @return string
      */
@@ -97,7 +102,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->name;
     }
-    
+
     /**
      * @return string
      */
@@ -105,7 +110,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return isset($this->fields[0]) ? $this->fields[0] : null;
     }
-    
+
     /**
      * @return array
      */
@@ -113,7 +118,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->fields;
     }
-    
+
     /**
      * @return bool
      */
@@ -121,7 +126,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return count($this->fields) > 1;
     }
-    
+
     /**
      * @return string
      */
@@ -129,7 +134,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->search_field) ? $this->search_field : $this->getField();
     }
-    
+
     /**
      * @return string
      */
@@ -137,7 +142,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->sort_field) ? $this->sort_field : $this->getField();
     }
-    
+
     /**
      * @return string
      */
@@ -145,7 +150,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->type;
     }
-    
+
     /**
      * @return SourceInterface
      */
@@ -153,7 +158,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->source;
     }
-    
+
     /**
      * @param string $field
      * @return string
@@ -168,7 +173,7 @@ abstract class AbstractColumn implements ColumnInterface
         }
         return $this->isMultiField() ? "_{$this->getSource()->getAlias()}_{$field}" : $this->getName();
     }
-    
+
     /**
      * @param bool $with_as
      * @return string
@@ -177,15 +182,15 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->getSource()->aliased($this->getField()).($with_as ? " as {$this->getAlias()}" : '');
     }
-    
+
     /**
      * @return string
      */
     public function forSearch()
     {
-        return $this->getSource()->aliased($this->getSearchField());
+        return $this->hasFunc() ? $this->getFunc() : $this->getSource()->aliased($this->getSearchField());
     }
-    
+
     /**
      * @return string
      */
@@ -193,7 +198,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->expression;
     }
-    
+
     /**
      * @return callable
      */
@@ -201,7 +206,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->value;
     }
-    
+
     /**
      * @param mixed $value
      * @return mixed
@@ -211,7 +216,7 @@ abstract class AbstractColumn implements ColumnInterface
         $func = $this->value;
         return is_callable($func) ? $func($value) : $value;
     }
-    
+
     /**
      * @return int|string
      */
@@ -219,7 +224,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->min_value;
     }
-    
+
     /**
      * @return int|string
      */
@@ -227,7 +232,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->max_value;
     }
-    
+
     /**
      * @return bool
      */
@@ -235,7 +240,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return isset($this->min_value);
     }
-    
+
     /**
      * @return bool
      */
@@ -243,7 +248,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return isset($this->max_value);
     }
-    
+
     /**
      * @return callable
      */
@@ -251,7 +256,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->transform;
     }
-    
+
     /**
      * @param mixed $value
      * @return mixed
@@ -261,7 +266,7 @@ abstract class AbstractColumn implements ColumnInterface
         $func = $this->transform;
         return is_callable($func) ? $func($value) : $value;
     }
-    
+
     /**
      * @return bool
      */
@@ -269,7 +274,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->type);
     }
-    
+
     /**
      * @return bool
      */
@@ -277,7 +282,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->expression);
     }
-    
+
     /**
      * @return bool
      */
@@ -285,7 +290,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->alias);
     }
-    
+
     /**
      * @return bool
      */
@@ -293,7 +298,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->value);
     }
-    
+
     /**
      * @return bool
      */
@@ -301,7 +306,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return ! is_null($this->transform);
     }
-    
+
     /**
      * @return bool
      */
@@ -309,7 +314,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->type === self::TYPE_DATE;
     }
-    
+
     /**
      * @return bool
      */
@@ -317,7 +322,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->type === self::TYPE_INT;
     }
-    
+
     /**
      * @return string
      */
@@ -325,7 +330,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->aggregate;
     }
-    
+
     /**
      * @return string
      */
@@ -333,7 +338,7 @@ abstract class AbstractColumn implements ColumnInterface
     {
         return $this->aggregate_expr;
     }
-    
+
     /**
      * @return string
      */
@@ -345,12 +350,28 @@ abstract class AbstractColumn implements ColumnInterface
         }
         return $this->getField();
     }
-    
+
     /**
      * @return bool
      */
     public function hasAggregate()
     {
         return ! empty($this->aggregate);
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasFunc()
+    {
+        return ! empty($this->func);
+    }
+
+    /**
+     * @return string
+     */
+    public function getFunc()
+    {
+        return $this->func;
     }
 }

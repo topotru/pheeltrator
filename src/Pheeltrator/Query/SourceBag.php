@@ -25,17 +25,17 @@ class SourceBag
      * @var SourceInterface
      */
     protected $source;
-    
+
     /**
      * @var ColumnCollectionInterface
      */
     protected $columns;
-    
+
     /**
      * @var Join[]
      */
     protected $joins = [];
-    
+
     /**
      * SourceBag constructor.
      * @param SourceInterface $source
@@ -46,22 +46,22 @@ class SourceBag
         $this->source  = $source;
         $this->columns = $columns;
     }
-    
+
     /**
      * @return array
      */
     public function getSelect()
     {
         $out = $this->getSourceSelect($this->source);
-        
+
         foreach ($this->getJoins() as $join) {
             $out = array_merge($out, $this->getSourceSelect($join->getSource()));
         }
-        
+
         return $out;
-        
+
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return array
@@ -69,7 +69,7 @@ class SourceBag
     protected function getSourceSelect(SourceInterface $source)
     {
         $out = [];
-        
+
         if ($source->getSelectFields() == Source::SELECT_ALL) {
             $out[] = $source->aliased('*');
         } else {
@@ -80,6 +80,8 @@ class SourceBag
                     $alias = $column->getAlias($field);
                     if ($column->hasAggregate()) {
                         $fields[] = "{$column->getFullAggregateExpr()} as {$alias}";
+                    } elseif ($column->hasFunc()) {
+                        $fields[] = "{$column->getFunc()} as {$alias}";
                     } else {
                         $fields[] = "{$column->getSource()->aliased($field)} as {$alias}";
                     }
@@ -89,7 +91,7 @@ class SourceBag
         }
         return $out;
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return ColumnCollectionInterface
@@ -104,7 +106,7 @@ class SourceBag
         }
         return $columns;
     }
-    
+
     /**
      * @param SourceInterface $source
      * @return bool
@@ -119,7 +121,7 @@ class SourceBag
         }
         return false;
     }
-    
+
     /**
      * @param Join $join
      * @return SourceBag
@@ -129,7 +131,7 @@ class SourceBag
         $this->joins[$join->getSource()->getAlias()] = $join;
         return $this;
     }
-    
+
     /**
      * @return SourceInterface
      */
@@ -137,7 +139,7 @@ class SourceBag
     {
         return $this->source;
     }
-    
+
     /**
      * @return ColumnCollectionInterface|ColumnInterface[]
      */
@@ -145,7 +147,7 @@ class SourceBag
     {
         return $this->columns;
     }
-    
+
     /**
      * @return Join[]
      */
@@ -153,7 +155,7 @@ class SourceBag
     {
         return $this->joins;
     }
-    
+
     /**
      * @param string $name
      * @return null|Join
@@ -162,7 +164,7 @@ class SourceBag
     {
         return isset($this->joins[$name]) ? $this->joins[$name] : null;
     }
-    
+
     /**
      * @param string $name
      * @return bool
@@ -171,5 +173,5 @@ class SourceBag
     {
         return isset($this->joins[$name]);
     }
-    
+
 }
